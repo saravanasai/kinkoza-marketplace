@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Company;
+use App\Enums\Country;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -68,5 +69,19 @@ class User extends Authenticatable implements PasskeyUser
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (User $user): void {
+            $company = Company::factory()->create([
+                'name' => "{$user->name}'s Company",
+                'country' => Country::FR,
+            ]);
+
+            $user->updateQuietly([
+                'company_id' => $company->id,
+            ]);
+        });
     }
 }
