@@ -4,9 +4,16 @@
             <flux:button as="a" :href="route('home')" wire:navigate variant="ghost" icon="arrow-left" class="justify-center">
                 {{ __('Back to marketplace') }}
             </flux:button>
-            <span class="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
-                {{ __('Live listing') }}
-            </span>
+            <div class="flex flex-wrap items-center gap-2">
+                @if ($isOwnListing)
+                    <span class="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700">
+                        {{ __('Own listing') }}
+                    </span>
+                @endif
+                <span class="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
+                    {{ __('Live listing') }}
+                </span>
+            </div>
         </div>
 
         <article class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
@@ -53,13 +60,19 @@
                     </p>
 
                     <div class="mt-6 rounded-xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
-                        {{ __('Explore more details on this marketplace listing.') }}
+                        @if ($isOwnListing)
+                            {{ __('This is your own marketplace listing, so contact details are shown automatically.') }}
+                        @else
+                            {{ __('Explore more details on this marketplace listing.') }}
+                        @endif
                     </div>
 
                     @auth
                         @if ($contactRevealed)
                             <div class="mt-5 space-y-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">{{ __('Seller contact') }}</p>
+                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                                    {{ $isOwnListing ? __('Your company contact') : __('Seller contact') }}
+                                </p>
                                 <dl class="space-y-3">
                                     @if ($listing->company?->contact_email)
                                         <div>
@@ -75,16 +88,22 @@
                                     @endif
                                 </dl>
                                 @if (! $listing->company?->contact_email && ! $listing->company?->contact_phone)
-                                    <p>{{ __('The seller has not provided contact details.') }}</p>
+                                    <p>
+                                        {{ $isOwnListing ? __('Your company has not provided contact details.') : __('The seller has not provided contact details.') }}
+                                    </p>
                                 @endif
                             </div>
-                        @else
+                        @elseif (! $isOwnListing)
                             <button type="button" wire:click="revealContact" class="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">
                                 {{ __('Contact seller') }}
                             </button>
                             @error('contact')
                                 <p class="mt-3 text-sm text-red-700">{{ $message }}</p>
                             @enderror
+                        @else
+                            <div class="mt-5 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+                                {{ __('Your company contact details are shown above.') }}
+                            </div>
                         @endif
                     @else
                         <a href="{{ route('login') }}" class="mt-5 inline-flex w-full items-center justify-center rounded-xl border border-blue-200 bg-white px-4 py-3 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-50" wire:navigate>

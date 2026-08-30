@@ -31,6 +31,8 @@ class Show extends Component
 
     public bool $contactRevealed = false;
 
+    public bool $isOwnListing = false;
+
     public function mount(Listing $listing): void
     {
         abort_unless(
@@ -42,11 +44,21 @@ class Show extends Component
 
         $this->listing = $listing->loadMissing('company');
 
+        $user = Auth::user();
+        $this->isOwnListing = $user instanceof User && $user->company_id === $this->listing->company_id;
+        $this->contactRevealed = $this->isOwnListing;
+
         $this->loadImages();
     }
 
     public function revealContact(): void
     {
+        if ($this->isOwnListing) {
+            $this->contactRevealed = true;
+
+            return;
+        }
+
         $user = Auth::user();
 
         abort_unless($user instanceof User, 403);
