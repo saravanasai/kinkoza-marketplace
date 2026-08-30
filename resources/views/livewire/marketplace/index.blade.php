@@ -55,9 +55,6 @@
                             <p class="text-sm font-medium text-slate-500">{{ __('Featured marketplace') }}</p>
                             <h2 class="mt-1 text-xl font-semibold text-slate-900">{{ __('Public listings') }}</h2>
                         </div>
-                        <span class="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
-                            {{ __(':count live', ['count' => $listings->count()]) }}
-                        </span>
                     </div>
 
                     @if ($listings->isEmpty())
@@ -139,9 +136,29 @@
                             @endforeach
                         </div>
 
-                        <div class="mt-8">
-                            {{ $listings->links() }}
-                        </div>
+                        @if ($listings->hasPages())
+                            <nav aria-label="{{ __('Listing pagination') }}" class="mt-8 flex items-center justify-between gap-3 border-t border-slate-200 pt-5">
+                                @if ($listings->onFirstPage())
+                                    <span class="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-400">
+                                        {{ __('Previous') }}
+                                    </span>
+                                @else
+                                    <button type="button" wire:click="previousPage" class="inline-flex items-center rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700">
+                                        {{ __('Previous') }}
+                                    </button>
+                                @endif
+
+                                @if ($listings->hasMorePages())
+                                    <button type="button" wire:click="nextPage" class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-500">
+                                        {{ __('Next') }}
+                                    </button>
+                                @else
+                                    <span class="inline-flex items-center rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-400">
+                                        {{ __('Next') }}
+                                    </span>
+                                @endif
+                            </nav>
+                        @endif
                     @endif
                 </div>
 

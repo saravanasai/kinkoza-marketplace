@@ -56,14 +56,7 @@ class Index extends Component
     public function render(): View
     {
         $postedAfter = $this->postedAfter();
-
-        if ($postedAfter === null) {
-            $listings = $this->searchScoutListings();
-        } elseif (config('scout.driver') === 'typesense') {
-            $listings = $this->searchTypesenseListings($postedAfter);
-        } else {
-            $listings = $this->searchLocalListings($postedAfter);
-        }
+        $listings = $this->searchListings($postedAfter);
 
         if ($listings instanceof LengthAwarePaginator) {
             $listings->getCollection()->load('company');
@@ -76,7 +69,7 @@ class Index extends Component
         ]);
     }
 
-    private function searchScoutListings(): LengthAwarePaginator
+    private function searchListings(?int $postedAfter): LengthAwarePaginator
     {
         return Listing::search($this->search)
             ->where('status', ListingStatus::Published->value)
@@ -85,60 +78,12 @@ class Index extends Component
                     ->where('published_at', '<=', now()->timestamp)
                     ->where('expires_at', '>', now()->timestamp);
             })
-            ->when($this->category !== '', function ($query): void {
-                $query->where('category', $this->category);
-            })
-            ->when($this->country !== '', function ($query): void {
-                $query->where('country', $this->country);
-            })
-            ->when(is_numeric($this->minPrice), function ($query): void {
-                $query->where('price', '>=', $this->minPrice);
-            })
-            ->when(is_numeric($this->maxPrice), function ($query): void {
-                $query->where('price', '<=', $this->maxPrice);
-            })
-            ->paginate(self::PER_PAGE);
-    }
-
-    private function searchTypesenseListings(?int $postedAfter): LengthAwarePaginator
-    {
-        return Listing::search($this->search)
-            ->where('status', ListingStatus::Published->value)
-            ->where('published_at', '<=', now()->timestamp)
-            ->where('expires_at', '>', now()->timestamp)
             ->when($postedAfter !== null, function ($query) use ($postedAfter): void {
-                $query->where('published_at', '>=', $postedAfter);
-            })
-            ->when($this->category !== '', function ($query): void {
-                $query->where('category', $this->category);
-            })
-            ->when($this->country !== '', function ($query): void {
-                $query->where('country', $this->country);
-            })
-            ->when(is_numeric($this->minPrice), function ($query): void {
-                $query->where('price', '>=', $this->minPrice);
-            })
-            ->when(is_numeric($this->maxPrice), function ($query): void {
-                $query->where('price', '<=', $this->maxPrice);
-            })
-            ->paginate(self::PER_PAGE);
-    }
-
-    private function searchLocalListings(?int $postedAfter): LengthAwarePaginator
-    {
-        return Listing::query()
-            ->currentlyOnline()
-            ->when($this->search !== '', function ($query): void {
-                $query->where(function ($query): void {
-                    $query
-                        ->where('title', 'like', '%'.$this->search.'%')
-                        ->orWhere('description', 'like', '%'.$this->search.'%')
-                        ->orWhere('category', 'like', '%'.$this->search.'%')
-                        ->orWhere('city', 'like', '%'.$this->search.'%');
-                });
-            })
-            ->when($postedAfter !== null, function ($query) use ($postedAfter): void {
-                $query->where('published_at', '>=', now()->setTimestamp($postedAfter));
+                $query->where(
+                    'published_at',
+                    '>=',
+                    config('scout.driver') === 'typesense' ? $postedAfter : now()->setTimestamp($postedAfter),
+                );
             })
             ->when($this->category !== '', function ($query): void {
                 $query->where('category', $this->category);

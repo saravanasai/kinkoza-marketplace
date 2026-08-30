@@ -8,6 +8,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 
+beforeEach(function (): void {
+    config()->set('scout.driver', 'collection');
+});
+
 test('guests can browse the public marketplace shell', function () {
     $response = $this->get(route('home'));
 
@@ -242,7 +246,10 @@ test('public marketplace listings paginate search results', function () {
 
     $this->get(route('home', ['page' => 2]))
         ->assertSee('Marketplace listing 01')
-        ->assertDontSee('Marketplace listing 02');
+        ->assertDontSee('Marketplace listing 02')
+        ->assertSee('Previous')
+        ->assertSee('Next')
+        ->assertDontSee('Go to page');
 });
 
 test('the active marketplace category can be cleared', function () {
