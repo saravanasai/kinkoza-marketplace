@@ -4,9 +4,12 @@ use App\Livewire\Listings\Create as CreateListing;
 use App\Livewire\Listings\Edit as EditListing;
 use App\Livewire\Listings\Index as ListingsIndex;
 use App\Livewire\Listings\Show as ShowListing;
+use App\Livewire\Marketplace\Index as MarketplaceIndex;
+use App\Livewire\Marketplace\Show as MarketplaceShow;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')->name('home');
+Route::livewire('/', MarketplaceIndex::class)->name('home');
+Route::livewire('marketplace/listings/{listing:slug}', MarketplaceShow::class)->name('marketplace.listings.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');

@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Listing;
+
 return [
 
     /*
@@ -195,28 +197,27 @@ return [
         ],
         // 'max_total_results' => env('TYPESENSE_MAX_TOTAL_RESULTS', 1000),
         'model-settings' => [
-            // User::class => [
-            //     'collection-schema' => [
-            //         'fields' => [
-            //             [
-            //                 'name' => 'id',
-            //                 'type' => 'string',
-            //             ],
-            //             [
-            //                 'name' => 'name',
-            //                 'type' => 'string',
-            //             ],
-            //             [
-            //                 'name' => 'created_at',
-            //                 'type' => 'int64',
-            //             ],
-            //         ],
-            //         'default_sorting_field' => 'created_at',
-            //     ],
-            //     'search-parameters' => [
-            //         'query_by' => 'name'
-            //     ],
-            // ],
+            Listing::class => [
+                'collection-schema' => [
+                    'fields' => [
+                        ['name' => 'id', 'type' => 'string'],
+                        ['name' => 'title', 'type' => 'string'],
+                        ['name' => 'description', 'type' => 'string'],
+                        ['name' => 'category', 'type' => 'string', 'facet' => true],
+                        ['name' => 'country', 'type' => 'string', 'facet' => true],
+                        ['name' => 'city', 'type' => 'string'],
+                        ['name' => 'price', 'type' => 'int64', 'facet' => true],
+                        ['name' => 'status', 'type' => 'string', 'facet' => true],
+                        ['name' => 'published_at', 'type' => 'int64', 'facet' => true],
+                        ['name' => 'expires_at', 'type' => 'int64', 'facet' => true],
+                        ['name' => 'created_at', 'type' => 'int64'],
+                    ],
+                    'default_sorting_field' => 'published_at',
+                ],
+                'search-parameters' => [
+                    'query_by' => 'title,description,category,city',
+                ],
+            ],
         ],
         'import_action' => env('TYPESENSE_IMPORT_ACTION', 'upsert'),
     ],

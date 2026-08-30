@@ -18,6 +18,8 @@ class Show extends Component
 
     public string $companyName = '';
 
+    public int $contactRevealsCount = 0;
+
     /**
      * @var array<int, array{id: int, name: string, url: string}>
      */
@@ -36,6 +38,8 @@ class Show extends Component
         $this->companyName = $user->company->name;
 
         Gate::authorize('view', $this->listing);
+
+        $this->contactRevealsCount = $this->listing->contactReveals()->count();
 
         $this->loadImages();
     }

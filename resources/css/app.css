@@ -36,6 +36,12 @@
     }
 }
 
+.marketplace-theme {
+    --color-accent: var(--color-blue-600);
+    --color-accent-content: var(--color-blue-700);
+    --color-accent-foreground: var(--color-white);
+}
+
 @layer base {
 
     *,

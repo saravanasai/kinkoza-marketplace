@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Company;
+use App\Models\ContactReveal;
 use App\Models\Listing;
 use App\Models\User;
 use Tests\TestCase;
@@ -27,6 +28,19 @@ test('a seller can view their own listing show page', function () {
         ->assertSee($listing->description)
         ->assertDontSee('Save listing')
         ->assertDontSee('Delete listing');
+});
+
+test('a seller can see contact reveal demand for their listing', function () {
+    /** @var TestCase $this */
+    $seller = User::factory()->create();
+    $listing = Listing::factory()->for($seller->company)->create();
+
+    ContactReveal::factory()->count(2)->for($listing)->create();
+
+    $this->actingAs($seller)
+        ->get(route('listings.show', $listing))
+        ->assertSee('Contact reveals')
+        ->assertSee('2');
 });
 
 test('a seller cannot view another company listing show page', function () {
