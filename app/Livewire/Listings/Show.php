@@ -1,0 +1,72 @@
+<?php
+
+namespace App\Livewire\Listings;
+
+use App\Models\Listing;
+use App\Models\User;
+use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
+
+#[Title('View listing')]
+class Show extends Component
+{
+    public Listing $listing;
+
+    public string $companyName = '';
+
+    /**
+     * @var array<int, array{id: int, name: string, url: string}>
+     */
+    public array $images = [];
+
+    public function mount(Listing $listing): void
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $user->loadMissing('company');
+
+        abort_unless($user->company_id === $listing->company_id, 404);
+
+        $this->listing = $listing->loadMissing('company');
+
+        $this->companyName = $user->company->name;
+
+        Gate::authorize('view', $this->listing);
+
+        $this->loadImages();
+    }
+
+    public function render(): View
+    {
+        return view('livewire.listings.show');
+    }
+
+    private function loadImages(): void
+    {
+        $this->images = $this->listing->getMedia('images')
+            ->map(fn (Media $image): array => [
+                'id' => $image->id,
+                'name' => $image->name ?: $image->file_name,
+                'url' => $this->resolveMediaUrl($image),
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function resolveMediaUrl(Media $media): string
+    {
+        $diskName = $media->disk ?? null;
+        $disks = config('filesystems.disks', []);
+        $driver = $diskName !== null && isset($disks[$diskName]) ? ($disks[$diskName]['driver'] ?? null) : null;
+
+        if ($driver === 's3') {
+            return $media->getTemporaryUrl(now()->addMinutes(15));
+        }
+
+        return $media->getUrl();
+    }
+}
