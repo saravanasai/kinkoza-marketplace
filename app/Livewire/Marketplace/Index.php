@@ -37,22 +37,48 @@ class Index extends Component
     #[Url]
     public string $maxPrice = '';
 
+    #[Url]
+    public string $postedWithin = '';
+
     public function clearFilters(): void
     {
-        $this->reset('search', 'category', 'country', 'minPrice', 'maxPrice');
+        $this->reset('search', 'category', 'country', 'minPrice', 'maxPrice', 'postedWithin');
         $this->resetPage();
     }
 
     public function updating(string $property): void
     {
-        if (in_array($property, ['search', 'category', 'country', 'minPrice', 'maxPrice'], true)) {
+        if (in_array($property, ['search', 'category', 'country', 'minPrice', 'maxPrice', 'postedWithin'], true)) {
             $this->resetPage();
         }
     }
 
     public function render(): View
     {
-        $listings = Listing::search($this->search)
+        $postedAfter = $this->postedAfter();
+
+        if ($postedAfter === null) {
+            $listings = $this->searchScoutListings();
+        } elseif (config('scout.driver') === 'typesense') {
+            $listings = $this->searchTypesenseListings($postedAfter);
+        } else {
+            $listings = $this->searchLocalListings($postedAfter);
+        }
+
+        if ($listings instanceof LengthAwarePaginator) {
+            $listings->getCollection()->load('company');
+        }
+
+        return view('livewire.marketplace.index', [
+            'listings' => $listings,
+            'categoryOptions' => ListingCategory::cases(),
+            'countryOptions' => Country::cases(),
+        ]);
+    }
+
+    private function searchScoutListings(): LengthAwarePaginator
+    {
+        return Listing::search($this->search)
             ->where('status', ListingStatus::Published->value)
             ->when(config('scout.driver') === 'typesense', function ($query): void {
                 $query
@@ -72,15 +98,72 @@ class Index extends Component
                 $query->where('price', '<=', $this->maxPrice);
             })
             ->paginate(self::PER_PAGE);
+    }
 
-        if ($listings instanceof LengthAwarePaginator) {
-            $listings->getCollection()->load('company');
-        }
+    private function searchTypesenseListings(?int $postedAfter): LengthAwarePaginator
+    {
+        return Listing::search($this->search)
+            ->where('status', ListingStatus::Published->value)
+            ->where('published_at', '<=', now()->timestamp)
+            ->where('expires_at', '>', now()->timestamp)
+            ->when($postedAfter !== null, function ($query) use ($postedAfter): void {
+                $query->where('published_at', '>=', $postedAfter);
+            })
+            ->when($this->category !== '', function ($query): void {
+                $query->where('category', $this->category);
+            })
+            ->when($this->country !== '', function ($query): void {
+                $query->where('country', $this->country);
+            })
+            ->when(is_numeric($this->minPrice), function ($query): void {
+                $query->where('price', '>=', $this->minPrice);
+            })
+            ->when(is_numeric($this->maxPrice), function ($query): void {
+                $query->where('price', '<=', $this->maxPrice);
+            })
+            ->paginate(self::PER_PAGE);
+    }
 
-        return view('livewire.marketplace.index', [
-            'listings' => $listings,
-            'categoryOptions' => ListingCategory::cases(),
-            'countryOptions' => Country::cases(),
-        ]);
+    private function searchLocalListings(?int $postedAfter): LengthAwarePaginator
+    {
+        return Listing::query()
+            ->currentlyOnline()
+            ->when($this->search !== '', function ($query): void {
+                $query->where(function ($query): void {
+                    $query
+                        ->where('title', 'like', '%'.$this->search.'%')
+                        ->orWhere('description', 'like', '%'.$this->search.'%')
+                        ->orWhere('category', 'like', '%'.$this->search.'%')
+                        ->orWhere('city', 'like', '%'.$this->search.'%');
+                });
+            })
+            ->when($postedAfter !== null, function ($query) use ($postedAfter): void {
+                $query->where('published_at', '>=', now()->setTimestamp($postedAfter));
+            })
+            ->when($this->category !== '', function ($query): void {
+                $query->where('category', $this->category);
+            })
+            ->when($this->country !== '', function ($query): void {
+                $query->where('country', $this->country);
+            })
+            ->when(is_numeric($this->minPrice), function ($query): void {
+                $query->where('price', '>=', $this->minPrice);
+            })
+            ->when(is_numeric($this->maxPrice), function ($query): void {
+                $query->where('price', '<=', $this->maxPrice);
+            })
+            ->paginate(self::PER_PAGE);
+    }
+
+    private function postedAfter(): ?int
+    {
+        $days = match ($this->postedWithin) {
+            '7' => 7,
+            '15' => 15,
+            '30' => 30,
+            default => null,
+        };
+
+        return $days === null ? null : now()->subDays($days)->timestamp;
     }
 }

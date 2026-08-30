@@ -186,6 +186,32 @@ test('public marketplace listings can be filtered by country and price range', f
         ->assertDontSee('Belgian Crane');
 });
 
+test('public marketplace highlights listings posted today and filters by posted date', function () {
+    config()->set('scout.driver', 'collection');
+
+    Listing::factory()->published()->create([
+        'title' => 'Today industrial press',
+        'published_at' => now()->subHour(),
+    ]);
+
+    Listing::factory()->published()->create([
+        'title' => 'Last week forklift',
+        'published_at' => now()->subDays(6),
+    ]);
+
+    Listing::factory()->published()->create([
+        'title' => 'Older packaging line',
+        'published_at' => now()->subDays(16),
+    ]);
+
+    $this->get(route('home', ['postedWithin' => '7']))
+        ->assertOk()
+        ->assertSee('Today industrial press')
+        ->assertSee('Last week forklift')
+        ->assertSee('Latest')
+        ->assertDontSee('Older packaging line');
+});
+
 test('public marketplace listings can be searched by keyword', function () {
     config()->set('scout.driver', 'collection');
 
