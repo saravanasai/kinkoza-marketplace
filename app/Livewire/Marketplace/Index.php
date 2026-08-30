@@ -73,16 +73,13 @@ class Index extends Component
     {
         return Listing::search($this->search)
             ->where('status', ListingStatus::Published->value)
-            ->when(config('scout.driver') === 'typesense', function ($query): void {
-                $query
-                    ->where('published_at', '<=', now()->timestamp)
-                    ->where('expires_at', '>', now()->timestamp);
-            })
+            ->where('published_at', '<=', now()->timestamp)
+            ->where('expires_at', '>', now()->timestamp)
             ->when($postedAfter !== null, function ($query) use ($postedAfter): void {
                 $query->where(
                     'published_at',
                     '>=',
-                    config('scout.driver') === 'typesense' ? $postedAfter : now()->setTimestamp($postedAfter),
+                    $postedAfter,
                 );
             })
             ->when($this->category !== '', function ($query): void {
