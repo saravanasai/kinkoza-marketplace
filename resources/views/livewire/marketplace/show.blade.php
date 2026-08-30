@@ -1,10 +1,9 @@
 <main class="marketplace-theme bg-slate-50 text-slate-900">
     <section class="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
         <div class="mb-6 flex items-center justify-between gap-3">
-            <a href="{{ route('home') }}" class="inline-flex items-center gap-2 text-sm font-medium text-blue-700 transition hover:text-blue-600" wire:navigate>
-                <span aria-hidden="true">←</span>
-                {{ __('Back to listings') }}
-            </a>
+            <flux:button as="a" :href="route('home')" wire:navigate variant="ghost" icon="arrow-left" class="justify-center">
+                {{ __('Back to marketplace') }}
+            </flux:button>
             <span class="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
                 {{ __('Live listing') }}
             </span>
@@ -54,7 +53,7 @@
                     </p>
 
                     <div class="mt-6 rounded-xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
-                        {{ __('This listing is currently live on the marketplace.') }}
+                        {{ __('Explore more details on this marketplace listing.') }}
                     </div>
 
                     @auth
@@ -81,7 +80,7 @@
                             </div>
                         @else
                             <button type="button" wire:click="revealContact" class="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">
-                                {{ __('Reveal seller contact') }}
+                                {{ __('Contact seller') }}
                             </button>
                             @error('contact')
                                 <p class="mt-3 text-sm text-red-700">{{ $message }}</p>
