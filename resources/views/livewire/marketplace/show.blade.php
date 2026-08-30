@@ -1,5 +1,5 @@
 <main class="marketplace-theme bg-slate-50 text-slate-900">
-    <section class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <section class="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
         <div class="mb-6 flex items-center justify-between gap-3">
             <a href="{{ route('home') }}" class="inline-flex items-center gap-2 text-sm font-medium text-blue-700 transition hover:text-blue-600" wire:navigate>
                 <span aria-hidden="true">←</span>
@@ -11,31 +11,31 @@
         </div>
 
         <article class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-            <div class="bg-linear-to-r from-blue-600 via-blue-600 to-blue-500 px-6 py-8 text-white sm:px-8">
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
+            <header class="bg-linear-to-r from-blue-600 via-blue-600 to-blue-500 px-6 py-8 text-white sm:px-8 lg:px-10 lg:py-10">
+                <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                    <div class="max-w-4xl">
                         <p class="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100">{{ $listing->category->value }}</p>
-                        <h1 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{{ $listing->title }}</h1>
+                        <h1 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">{{ $listing->title }}</h1>
+                        <div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-blue-100">
+                            <span>{{ $listing->city }}</span>
+                            <span aria-hidden="true">•</span>
+                            <span>{{ $listing->country->value }}</span>
+                        </div>
                     </div>
-                    <div class="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-blue-50">
+                    <div class="max-w-full self-start whitespace-nowrap rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-medium text-blue-50 lg:self-auto">
                         {{ $listing->company?->name ?? __('Verified seller') }}
                     </div>
                 </div>
-                <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-blue-100">
-                    <span>{{ $listing->city }}</span>
-                    <span>•</span>
-                    <span>{{ $listing->country->value }}</span>
-                </div>
-            </div>
+            </header>
 
-            <div id="listing-gallery" class="border-b border-slate-200 bg-slate-100 p-4 sm:p-6">
+            <section id="listing-gallery" class="border-b border-slate-200 bg-slate-100 p-4 sm:p-6 lg:p-8">
                 <p class="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{{ __('Gallery') }}</p>
 
                 @if (count($images) > 0)
-                    <div class="grid gap-3 md:grid-cols-4">
+                    <div class="grid auto-rows-48 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:auto-rows-60">
                         @foreach ($images as $image)
-                            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                                <img src="{{ $image['url'] }}" alt="{{ $image['name'] }}" class="h-52 w-full object-cover object-center transition duration-300 hover:scale-[1.02]">
+                            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm {{ $loop->first ? 'sm:col-span-2 lg:row-span-2' : '' }}">
+                                <img src="{{ $image['url'] }}" alt="{{ $image['name'] }}" class="h-full w-full object-cover object-center transition duration-300 hover:scale-[1.02]">
                             </div>
                         @endforeach
                     </div>
@@ -44,45 +44,16 @@
                         {{ __('No photos have been uploaded for this listing yet.') }}
                     </div>
                 @endif
-            </div>
+            </section>
 
-            <div class="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.6fr_0.9fr]">
-                <div class="space-y-6">
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{{ __('Overview') }}</p>
-                        <p class="mt-3 text-base leading-7 text-slate-700">{{ $listing->description }}</p>
-                    </div>
-
-                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{{ __('Details') }}</p>
-                        <dl class="mt-4 grid gap-4 sm:grid-cols-2">
-                            <div>
-                                <dt class="text-sm text-slate-500">{{ __('Country') }}</dt>
-                                <dd class="mt-1 font-medium text-slate-900">{{ $listing->country->value }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm text-slate-500">{{ __('City') }}</dt>
-                                <dd class="mt-1 font-medium text-slate-900">{{ $listing->city }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm text-slate-500">{{ __('Published') }}</dt>
-                                <dd class="mt-1 font-medium text-slate-900">{{ $listing->published_at?->format('M j, Y') ?? '—' }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm text-slate-500">{{ __('Expires') }}</dt>
-                                <dd class="mt-1 font-medium text-slate-900">{{ $listing->expires_at?->format('M j, Y') ?? '—' }}</dd>
-                            </div>
-                        </dl>
-                    </div>
-                </div>
-
-                <aside class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            <div class="grid gap-8 p-6 sm:p-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(20rem,0.85fr)] lg:p-10">
+                <aside class="order-1 rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-6 lg:order-2 lg:sticky lg:top-6 lg:self-start">
                     <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{{ __('Price') }}</p>
-                    <p class="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
+                    <p class="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
                         {{ $listing->currency->value }} {{ number_format($listing->price) }}
                     </p>
 
-                    <div class="mt-5 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+                    <div class="mt-6 rounded-xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
                         {{ __('This listing is currently live on the marketplace.') }}
                     </div>
 
@@ -94,13 +65,13 @@
                                     @if ($listing->company?->contact_email)
                                         <div>
                                             <dt class="text-xs font-medium text-emerald-700">{{ __('Email') }}</dt>
-                                            <dd class="mt-1"><a href="mailto:{{ $listing->company->contact_email }}" class="font-medium hover:text-emerald-700">{{ $listing->company->contact_email }}</a></dd>
+                                            <dd class="mt-1 wrap-break-word"><a href="mailto:{{ $listing->company->contact_email }}" class="font-medium hover:text-emerald-700">{{ $listing->company->contact_email }}</a></dd>
                                         </div>
                                     @endif
                                     @if ($listing->company?->contact_phone)
                                         <div>
                                             <dt class="text-xs font-medium text-emerald-700">{{ __('Phone') }}</dt>
-                                            <dd class="mt-1"><a href="tel:{{ $listing->company->contact_phone }}" class="font-medium hover:text-emerald-700">{{ $listing->company->contact_phone }}</a></dd>
+                                            <dd class="mt-1 wrap-break-word"><a href="tel:{{ $listing->company->contact_phone }}" class="font-medium hover:text-emerald-700">{{ $listing->company->contact_phone }}</a></dd>
                                         </div>
                                     @endif
                                 </dl>
@@ -122,6 +93,31 @@
                         </a>
                     @endauth
                 </aside>
+
+                <div class="order-2 space-y-6 lg:order-1">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{{ __('Overview') }}</p>
+                        <p class="mt-3 max-w-4xl text-base leading-7 text-slate-700">{{ $listing->description }}</p>
+                    </div>
+
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{{ __('Details') }}</p>
+                        <dl class="mt-4 grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <dt class="text-sm text-slate-500">{{ __('Country') }}</dt>
+                                <dd class="mt-1 font-medium text-slate-900">{{ $listing->country->value }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm text-slate-500">{{ __('City') }}</dt>
+                                <dd class="mt-1 font-medium text-slate-900">{{ $listing->city }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm text-slate-500">{{ __('Published') }}</dt>
+                                <dd class="mt-1 font-medium text-slate-900">{{ $listing->published_at?->format('M j, Y') ?? '—' }}</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
             </div>
         </article>
     </section>

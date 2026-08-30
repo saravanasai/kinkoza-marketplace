@@ -186,5 +186,8 @@ class DatabaseSeeder extends Seeder
         foreach ($listings as $listing) {
             Listing::query()->create($listing);
         }
+
+        Listing::factory(400)->for($companyA)->create();
+        Listing::factory(500)->for($companyB)->create();
     }
 }

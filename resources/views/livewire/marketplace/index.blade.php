@@ -102,9 +102,16 @@
 
                                     <div class="flex flex-1 flex-col p-5">
                                         <div class="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                                            <span class="shrink-0 whitespace-nowrap rounded-full bg-white px-2.5 py-1 text-blue-700 ring-1 ring-inset ring-blue-100">
-                                                {{ $listing->category->value }}
-                                            </span>
+                                            <div class="flex min-w-0 items-center gap-2">
+                                                <span class="shrink-0 whitespace-nowrap rounded-full bg-white px-2.5 py-1 text-blue-700 ring-1 ring-inset ring-blue-100">
+                                                    {{ $listing->category->value }}
+                                                </span>
+                                                @if ($listing->published_at?->isToday())
+                                                    <span class="shrink-0 whitespace-nowrap rounded-full bg-emerald-50 px-2.5 py-1 text-emerald-700 ring-1 ring-inset ring-emerald-200">
+                                                        {{ __('Latest') }}
+                                                    </span>
+                                                @endif
+                                            </div>
                                             <span class="min-w-0 truncate text-right">{{ $listing->city }}</span>
                                         </div>
 
@@ -141,7 +148,7 @@
                 <aside class="order-1 rounded-2xl border border-slate-200 bg-slate-50 p-5 lg:order-1 lg:sticky lg:top-6 lg:self-start">
                     <div class="flex items-center justify-between gap-3">
                         <h3 class="text-base font-semibold text-slate-900">{{ __('Filters') }}</h3>
-                        @if ($search !== '' || $category !== '' || $country !== '' || $minPrice !== '' || $maxPrice !== '')
+                        @if ($search !== '' || $category !== '' || $country !== '' || $minPrice !== '' || $maxPrice !== '' || $postedWithin !== '')
                             <button type="button" wire:click="clearFilters" class="text-xs font-semibold text-blue-700 hover:text-blue-800">
                                 {{ __('Clear filter') }}
                             </button>
@@ -169,6 +176,16 @@
                             </select>
                         </div>
 
+                        <div>
+                            <label for="posted-within" class="mb-2 block text-sm font-medium text-slate-700">{{ __('Date posted') }}</label>
+                            <select id="posted-within" wire:model.live="postedWithin" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                                <option value="">{{ __('Any time') }}</option>
+                                <option value="7">{{ __('Last 7 days') }}</option>
+                                <option value="15">{{ __('Last 15 days') }}</option>
+                                <option value="30">{{ __('Last 30 days') }}</option>
+                            </select>
+                        </div>
+
                         <fieldset>
                             <legend class="mb-2 block text-sm font-medium text-slate-700">{{ __('Price range') }}</legend>
                             <div class="grid grid-cols-2 gap-3">
@@ -177,7 +194,7 @@
                             </div>
                         </fieldset>
 
-                        @if ($search !== '' || $category !== '' || $country !== '' || $minPrice !== '' || $maxPrice !== '')
+                        @if ($search !== '' || $category !== '' || $country !== '' || $minPrice !== '' || $maxPrice !== '' || $postedWithin !== '')
                             <div class="rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">
                                 {{ __('Filters applied') }}
                             </div>
