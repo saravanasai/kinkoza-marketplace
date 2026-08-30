@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -35,7 +36,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class Listing extends Model implements HasMedia
 {
     /** @use HasFactory<ListingFactory> */
-    use HasFactory, InteractsWithMedia, SoftDeletes;
+    use HasFactory, InteractsWithMedia, Searchable, SoftDeletes;
 
     protected function casts(): array
     {
@@ -52,6 +53,33 @@ class Listing extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('images')->useDisk('s3');
+    }
+
+    /**
+     * @return array<string, int|string>
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => (string) $this->id,
+            'title' => $this->title,
+            'description' => $this->description,
+            'category' => $this->category->value,
+            'country' => $this->country->value,
+            'city' => $this->city,
+            'price' => $this->price,
+            'status' => $this->status->value,
+            'published_at' => $this->published_at?->timestamp ?? 0,
+            'expires_at' => $this->expires_at?->timestamp ?? 0,
+            'created_at' => $this->created_at->timestamp,
+        ];
+    }
+
+    public function shouldBeSearchable(): bool
+    {
+        return $this->status === ListingStatus::Published
+            && $this->published_at?->isPast()
+            && $this->expires_at?->isFuture();
     }
 
     /**

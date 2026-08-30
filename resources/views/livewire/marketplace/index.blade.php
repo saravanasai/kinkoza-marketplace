@@ -1,0 +1,194 @@
+<main class="marketplace-theme bg-slate-50 text-slate-900">
+    <section class="bg-linear-to-r from-blue-600 via-blue-600 to-blue-500 text-white">
+        <div class="px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
+            <div class="mx-auto max-w-4xl text-center">
+                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-100">
+                    {{ __('Kinkoza marketplace') }}
+                </p>
+                <h1 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
+                    {{ __('Source commercial assets with confidence') }}
+                </h1>
+                <p class="mt-3 text-sm text-blue-100 sm:text-base">
+                    {{ __('Search machinery, vehicles, property, and business equipment from vetted sellers around the world.') }}
+                </p>
+
+                <div class="mt-8 rounded-2xl border border-white/30 bg-white/10 p-3 shadow-lg backdrop-blur-sm">
+                    <div class="flex items-center gap-3 rounded-xl bg-white px-4 py-3 text-left text-slate-500 shadow-sm">
+                        <svg class="h-5 w-5 shrink-0 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <circle cx="11" cy="11" r="6"></circle>
+                            <path d="M16 16L21 21"></path>
+                        </svg>
+                        <input
+                            type="search"
+                            wire:model.live.debounce.500ms="search"
+                            placeholder="{{ __('Search for machinery, vehicles, property...') }}"
+                            class="w-full border-0 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+                            aria-label="{{ __('Search listings') }}"
+                        >
+                    </div>
+                </div>
+
+                <div class="mx-auto mt-8 grid max-w-2xl gap-4 border-t border-white/30 pt-6 text-left sm:grid-cols-3">
+                    <div>
+                        <p class="text-2xl font-semibold tracking-tight">1M+</p>
+                        <p class="mt-1 text-sm text-blue-100">{{ __('Over 1 million verified listings') }}</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-semibold tracking-tight">50+</p>
+                        <p class="mt-1 text-sm text-blue-100">{{ __('Markets represented') }}</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-semibold tracking-tight">24/7</p>
+                        <p class="mt-1 text-sm text-blue-100">{{ __('Global marketplace access') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="marketplace-listings" class="px-4 py-8 sm:px-6 lg:px-8">
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)]">
+                <div class="order-2 lg:order-2">
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-medium text-slate-500">{{ __('Featured marketplace') }}</p>
+                            <h2 class="mt-1 text-xl font-semibold text-slate-900">{{ __('Public listings') }}</h2>
+                        </div>
+                        <span class="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                            {{ __(':count live', ['count' => $listings->count()]) }}
+                        </span>
+                    </div>
+
+                    @if ($listings->isEmpty())
+                        <div class="mt-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
+                            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                                <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                    <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-9Z"></path>
+                                    <path d="M8 9h8M8 13h5"></path>
+                                </svg>
+                            </div>
+                            <h3 class="mt-4 text-lg font-semibold text-slate-900">{{ __('No listings match this category yet') }}</h3>
+                            <p class="mt-2 text-sm text-slate-600">
+                                {{ __('Try another category to browse the live marketplace.') }}
+                            </p>
+                        </div>
+                    @else
+                        <div class="mt-8 grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
+                            @foreach ($listings as $listing)
+                                @php
+                                    $featuredImage = $listing->getFirstMedia('images');
+                                    $featuredImageUrl = null;
+
+                                    if ($featuredImage) {
+                                        $disk = config('filesystems.disks.'.$featuredImage->disk, []);
+                                        $featuredImageUrl = ($disk['driver'] ?? null) === 's3'
+                                            ? $featuredImage->getTemporaryUrl(now()->addMinutes(15))
+                                            : $featuredImage->getUrl();
+                                    }
+                                @endphp
+                                <article wire:key="listing-{{ $listing->id }}" class="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm transition hover:border-blue-200 hover:shadow-md">
+                                    @if ($featuredImage)
+                                        <img src="{{ $featuredImageUrl }}" alt="{{ $listing->title }}" class="h-52 w-full object-cover object-center">
+                                    @else
+                                        <div class="flex h-52 items-center justify-center bg-linear-to-br from-blue-100 via-slate-100 to-slate-200 text-blue-700">
+                                            <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                                <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-9Z"></path>
+                                                <circle cx="9" cy="10" r="2"></circle>
+                                                <path d="m20 15-5-5L7 19"></path>
+                                            </svg>
+                                        </div>
+                                    @endif
+
+                                    <div class="flex flex-1 flex-col p-5">
+                                        <div class="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                                            <span class="shrink-0 whitespace-nowrap rounded-full bg-white px-2.5 py-1 text-blue-700 ring-1 ring-inset ring-blue-100">
+                                                {{ $listing->category->value }}
+                                            </span>
+                                            <span class="min-w-0 truncate text-right">{{ $listing->city }}</span>
+                                        </div>
+
+                                        <div class="mt-4 flex-1">
+                                            <h3 class="text-xl font-semibold tracking-tight text-slate-900">{{ $listing->title }}</h3>
+                                            <p class="mt-2 text-sm font-medium text-slate-600">{{ $listing->company?->name ?? __('Verified seller') }}</p>
+                                            <p class="mt-3 text-sm leading-6 text-slate-600">{{ str($listing->description)->limit(140) }}</p>
+                                        </div>
+
+                                        <div class="mt-5 border-t border-slate-200 pt-4">
+                                            <div class="flex items-center justify-between gap-3">
+                                                <div>
+                                                    <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">{{ __('Price') }}</p>
+                                                    <p class="mt-1 text-lg font-semibold text-slate-900">
+                                                        {{ $listing->currency->value }} {{ number_format($listing->price) }}
+                                                    </p>
+                                                </div>
+                                                <a href="{{ route('marketplace.listings.show', $listing) }}" class="inline-flex items-center rounded-full bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-500" wire:navigate>
+                                                    {{ __('View') }}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+
+                        <div class="mt-8">
+                            {{ $listings->links() }}
+                        </div>
+                    @endif
+                </div>
+
+                <aside class="order-1 rounded-2xl border border-slate-200 bg-slate-50 p-5 lg:order-1 lg:sticky lg:top-6 lg:self-start">
+                    <div class="flex items-center justify-between gap-3">
+                        <h3 class="text-base font-semibold text-slate-900">{{ __('Filters') }}</h3>
+                        @if ($search !== '' || $category !== '' || $country !== '' || $minPrice !== '' || $maxPrice !== '')
+                            <button type="button" wire:click="clearFilters" class="text-xs font-semibold text-blue-700 hover:text-blue-800">
+                                {{ __('Clear filter') }}
+                            </button>
+                        @endif
+                    </div>
+
+                    <div class="mt-4 space-y-4">
+                        <div>
+                            <label for="category" class="mb-2 block text-sm font-medium text-slate-700">{{ __('Category') }}</label>
+                            <select id="category" wire:model.live="category" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                                <option value="">{{ __('All categories') }}</option>
+                                @foreach ($categoryOptions as $option)
+                                    <option value="{{ $option->value }}">{{ $option->value }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="country" class="mb-2 block text-sm font-medium text-slate-700">{{ __('Country') }}</label>
+                            <select id="country" wire:model.live="country" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                                <option value="">{{ __('All countries') }}</option>
+                                @foreach ($countryOptions as $option)
+                                    <option value="{{ $option->value }}">{{ $option->value }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <fieldset>
+                            <legend class="mb-2 block text-sm font-medium text-slate-700">{{ __('Price range') }}</legend>
+                            <div class="grid grid-cols-2 gap-3">
+                                <input id="min-price" type="number" min="0" step="1" wire:model.live.debounce.500ms="minPrice" placeholder="{{ __('Min') }}" aria-label="{{ __('Minimum price') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                                <input id="max-price" type="number" min="0" step="1" wire:model.live.debounce.500ms="maxPrice" placeholder="{{ __('Max') }}" aria-label="{{ __('Maximum price') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                            </div>
+                        </fieldset>
+
+                        @if ($search !== '' || $category !== '' || $country !== '' || $minPrice !== '' || $maxPrice !== '')
+                            <div class="rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">
+                                {{ __('Filters applied') }}
+                            </div>
+                        @endif
+
+                        <div class="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-600">
+                            {{ __('Browse live inventory from verified sellers and narrow the feed to the category you need.') }}
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </section>
+</main>

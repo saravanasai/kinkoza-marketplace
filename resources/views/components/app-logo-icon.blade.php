@@ -1,1 +1,3 @@
-<img src="{{ asset('kinkoza-logo.svg') }}" alt="Kinkoza" {{ $attributes->merge(['class' => 'h-8 w-auto']) }}>
+<span {{ $attributes->merge(['class' => 'inline-flex !h-auto !w-auto items-center text-xl font-semibold tracking-tight text-zinc-950 dark:text-white']) }}>
+	{{ __('Kinkoza') }}
+</span>

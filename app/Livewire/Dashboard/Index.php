@@ -3,6 +3,7 @@
 namespace App\Livewire\Dashboard;
 
 use App\Enums\ListingStatus;
+use App\Models\ContactReveal;
 use App\Models\Listing;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
@@ -20,6 +21,8 @@ class Index extends Component
     public int $draftCount = 0;
 
     public int $pendingReviewCount = 0;
+
+    public int $contactRevealsCount = 0;
 
     public function mount(): void
     {
@@ -39,6 +42,10 @@ class Index extends Component
         $this->publishedCount = (int) ($counts[ListingStatus::Published->value] ?? 0);
         $this->draftCount = (int) ($counts[ListingStatus::Draft->value] ?? 0);
         $this->pendingReviewCount = (int) ($counts[ListingStatus::PendingReview->value] ?? 0);
+
+        $this->contactRevealsCount = ContactReveal::query()
+            ->whereHas('listing', fn ($query) => $query->where('company_id', $user->company_id))
+            ->count();
     }
 
     public function render(): View

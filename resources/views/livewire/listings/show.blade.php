@@ -26,6 +26,11 @@
                 <input id="company" type="text" value="{{ $companyName }}" disabled class="block w-full rounded-xl border border-zinc-300 bg-zinc-100 px-3 py-2 text-sm text-zinc-950 shadow-sm dark:border-zinc-700 dark:bg-zinc-950 dark:text-white">
             </div>
 
+            <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-950/40">
+                <p class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('Contact reveals') }}</p>
+                <p class="mt-2 text-2xl font-semibold text-zinc-950 dark:text-white">{{ $contactRevealsCount }}</p>
+            </div>
+
             <div class="md:col-span-2 space-y-4">
                 @if (count($images) > 0)
                     <div class="space-y-3">
