@@ -15,7 +15,7 @@
                 </p>
             </div>
 
-            <flux:button as="a" :href="route('listings.index')" wire:navigate variant="ghost" class="justify-center lg:justify-start">
+            <flux:button as="a" :href="route('listings.index')" wire:navigate variant="ghost" icon="arrow-left" class="justify-center lg:justify-start">
                 {{ __('Back') }}
             </flux:button>
         </div>
@@ -188,18 +188,18 @@
                     <p class="mt-1 text-sm text-red-700 dark:text-red-200">{{ __('This will move the listing to the trash. It will no longer appear in your dashboard.') }}</p>
                 </div>
 
-                <flux:button type="button" variant="danger" class="justify-center" wire:click="delete" wire:loading.attr="disabled" wire:target="delete">
+                <flux:button type="button" variant="danger" icon="trash" class="justify-center" wire:click="delete" wire:loading.attr="disabled" wire:target="delete">
                     {{ __('Delete listing') }}
                 </flux:button>
             </div>
         </div>
 
         <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
-            <flux:button as="a" :href="route('listings.index')" wire:navigate variant="ghost" class="justify-center">
+            <flux:button as="a" :href="route('listings.index')" wire:navigate variant="ghost" icon="arrow-left" class="justify-center">
                 {{ __('Cancel') }}
             </flux:button>
 
-            <flux:button variant="primary" type="submit" class="justify-center" wire:loading.attr="disabled" wire:target="save">
+            <flux:button variant="primary" type="submit" icon="check" class="justify-center" wire:loading.attr="disabled" wire:target="save">
                 {{ __('Save changes') }}
             </flux:button>
         </div>

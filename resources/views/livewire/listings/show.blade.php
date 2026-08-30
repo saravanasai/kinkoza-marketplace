@@ -13,7 +13,7 @@
                 </p>
             </div>
 
-            <flux:button as="a" :href="route('listings.index')" wire:navigate variant="ghost" class="justify-center lg:justify-start">
+            <flux:button as="a" :href="route('listings.index')" wire:navigate variant="ghost" icon="arrow-left" class="justify-center lg:justify-start">
                 {{ __('Back') }}
             </flux:button>
         </div>

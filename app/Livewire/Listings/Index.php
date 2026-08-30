@@ -60,7 +60,6 @@ class Index extends Component
     {
         /** @var User $user */
         $user = Auth::user();
-        $user->loadMissing('company');
 
         $listings = Listing::query()
             ->where('company_id', $user->company_id)
