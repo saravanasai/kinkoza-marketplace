@@ -123,7 +123,7 @@
                                                         {{ $listing->currency->value }} {{ number_format($listing->price) }}
                                                     </p>
                                                 </div>
-                                                <flux:button as="a" :href="route('marketplace.listings.show', $listing)" wire:navigate size="sm" variant="primary" icon="eye" class="min-w-36 rounded-full px-4 py-2.5 font-semibold shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
+                                                <flux:button as="a" :href="route('marketplace.listings.show', $listing->slug)" wire:navigate size="sm" variant="primary" icon="eye" class="min-w-36 rounded-full px-4 py-2.5 font-semibold shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
                                                     {{ __('More details') }}
                                                 </flux:button>
                                             </div>
@@ -165,7 +165,7 @@
                             <flux:icon name="funnel" class="h-4 w-4 text-slate-900" />
                             <span>{{ __('Filters') }}</span>
                         </h3>
-                        @if ($search !== null || $category !== null || $country !== null || $minPrice !== null || $maxPrice !== null || $postedWithin !== '')
+                        @if ($this->isFilterApplied())
                             <flux:button type="button" variant="primary" size="sm" icon="x-mark" wire:click="clearFilters" class="rounded-full">
                                 {{ __('Clear filter') }}
                             </flux:button>
@@ -270,7 +270,7 @@
                             </div>
                         </fieldset>
 
-                        @if ($search !== '' || $category !== '' || $country !== '' || $minPrice !== '' || $maxPrice !== '' || $postedWithin !== '')
+                        @if ($this->isFilterApplied())
                             <div class="rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700">
                                 {{ __('Filters applied') }}
                             </div>

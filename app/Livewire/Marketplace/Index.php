@@ -63,6 +63,11 @@ class Index extends Component
         }
     }
 
+    public function isFilterApplied(): bool
+    {
+        return $this->search !== null && $this->search !== '' || $this->category !== null || $this->country !== null || $this->minPrice !== null || $this->maxPrice !== null || $this->postedWithin !== '';
+    }
+
     public function render(): View
     {
         $postedAfter = $this->postedAfter();
@@ -119,6 +124,7 @@ class Index extends Component
             'country' => ['nullable', Rule::enum(Country::class)],
             'minPrice' => ['nullable', 'numeric', 'min:0'],
             'maxPrice' => ['nullable', 'numeric', 'min:0', 'gte:minPrice'],
+            'postedWithin' => ['nullable', Rule::in(['7', '15', '30'])],
         ];
     }
 

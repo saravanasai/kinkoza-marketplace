@@ -38,8 +38,14 @@ class Show extends Component
         $this->listing = $marketplaceListing;
 
         $user = Auth::user();
-        $this->isOwnListing = $user instanceof User && $user->company_id === $this->listing->company_id;
-        $this->contactRevealed = $this->isOwnListing;
+
+        if($user != null && $user->company_id === $this->listing->company_id) {
+            $this->isOwnListing = true;
+            $this->contactRevealed = true;
+        } else {
+            $this->isOwnListing = false;
+            $this->contactRevealed = false;
+        }
 
         $this->loadImages();
     }
@@ -53,8 +59,6 @@ class Show extends Component
         }
 
         $user = Auth::user();
-
-        abort_unless($user instanceof User, 403);
 
         $contactReveal = RateLimiter::attempt(
             'contact-reveal:'.$user->id,
