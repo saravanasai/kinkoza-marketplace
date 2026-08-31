@@ -9,7 +9,8 @@ use App\Livewire\Marketplace\Show as MarketplaceShow;
 use Illuminate\Support\Facades\Route;
 
 Route::livewire('/', MarketplaceIndex::class)->name('home');
-Route::livewire('marketplace/listings/{listing:slug}', MarketplaceShow::class)->name('marketplace.listings.show');
+
+Route::livewire('marketplace/listings/{marketplaceListing}', MarketplaceShow::class)->name('marketplace.listings.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');

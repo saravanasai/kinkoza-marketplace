@@ -33,16 +33,9 @@ class Show extends Component
 
     public bool $isOwnListing = false;
 
-    public function mount(Listing $listing): void
+    public function mount(Listing $marketplaceListing): void
     {
-        abort_unless(
-            $listing->status === ListingStatus::Published
-                && $listing->published_at?->lessThanOrEqualTo(now()) === true
-                && $listing->expires_at?->greaterThan(now()) === true,
-            404,
-        );
-
-        $this->listing = $listing->loadMissing('company');
+        $this->listing = $marketplaceListing;
 
         $user = Auth::user();
         $this->isOwnListing = $user instanceof User && $user->company_id === $this->listing->company_id;
@@ -109,14 +102,6 @@ class Show extends Component
 
     private function resolveMediaUrl(Media $media): string
     {
-        $diskName = $media->disk ?? null;
-        $disks = config('filesystems.disks', []);
-        $driver = $diskName !== null && isset($disks[$diskName]) ? ($disks[$diskName]['driver'] ?? null) : null;
-
-        if ($driver === 's3') {
-            return $media->getTemporaryUrl(now()->addMinutes(15));
-        }
-
-        return $media->getUrl();
+        return $media->getTemporaryUrl(now()->addMinutes(15));
     }
 }
