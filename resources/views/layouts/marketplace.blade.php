@@ -2,6 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
     <head>
         @include('partials.head')
+        @stack('head')
     </head>
     <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
         <div class="marketplace-theme min-h-screen">

@@ -1,3 +1,49 @@
+@php
+    $pageTitle = $listing->title.' - '.config('app.name', 'Kinkoza Marketplace');
+    $pageDescription = str($listing->description)->stripTags()->squish()->limit(160);
+    $canonicalUrl = route('marketplace.listings.show', $listing);
+    $ogImage = $images[0]['url'] ?? asset('android-chrome-512x512.png');
+@endphp
+
+@push('head')
+    <meta name="description" content="{{ $pageDescription }}">
+    <link rel="canonical" href="{{ $canonicalUrl }}">
+
+    <meta property="og:type" content="product">
+    <meta property="og:site_name" content="{{ config('app.name', 'Kinkoza Marketplace') }}">
+    <meta property="og:title" content="{{ $pageTitle }}">
+    <meta property="og:description" content="{{ $pageDescription }}">
+    <meta property="og:url" content="{{ $canonicalUrl }}">
+    <meta property="og:image" content="{{ $ogImage }}">
+    <meta property="og:image:alt" content="{{ $listing->title }}">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $pageTitle }}">
+    <meta name="twitter:description" content="{{ $pageDescription }}">
+    <meta name="twitter:image" content="{{ $ogImage }}">
+
+    <script type="application/ld+json">
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'Product',
+            'name' => $listing->title,
+            'description' => $pageDescription,
+            'url' => $canonicalUrl,
+            'image' => $ogImage,
+            'offers' => [
+                '@type' => 'Offer',
+                'priceCurrency' => $listing->currency->value,
+                'price' => $listing->price,
+                'availability' => 'https://schema.org/InStock',
+            ],
+            'brand' => [
+                '@type' => 'Organization',
+                'name' => $listing->company?->name ?? __('Verified seller'),
+            ],
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+@endpush
+
 <main class="marketplace-theme bg-slate-50 text-slate-900">
     <section class="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
         <div class="mb-6 flex items-center justify-between gap-3">
