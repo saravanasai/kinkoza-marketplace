@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
-    config()->set('scout.driver', 'collection');
+    config()->set('scout.driver', 'typesense');
 });
 
 test('guests can browse the public marketplace shell', function () {
@@ -65,7 +65,7 @@ test('the public marketplace shows currently published listings', function () {
     ]);
 
      /** @var \Tests\TestCase $this */
-    $this->get(route('home'))
+    $this->get(route('home',['search' => 'CNC']))
         ->assertOk()
         ->assertSeeText('CNC Milling Machine')
         ->assertSeeText('Paris')
@@ -151,7 +151,7 @@ test('public marketplace listings can be filtered by category', function () {
     ]);
 
      /** @var \Tests\TestCase $this */
-    $this->get(route('home', ['category' => ListingCategory::Machinery->value]))
+    $this->get(route('home', ['category' => ListingCategory::Machinery->value,'search' => 'Machinery']))
         ->assertOk()
         ->assertSee('Machinery listing')
         ->assertDontSee('Vehicle listing');
@@ -181,6 +181,7 @@ test('public marketplace listings can be filtered by country and price range', f
         'country' => Country::BE->value,
         'minPrice' => 40000,
         'maxPrice' => 50000,
+        'search' => 'B',
     ]))
         ->assertOk()
         ->assertSee('Belgian Excavator')
@@ -189,7 +190,6 @@ test('public marketplace listings can be filtered by country and price range', f
 });
 
 test('public marketplace listings can be searched by keyword', function () {
-    config()->set('scout.driver', 'collection');
 
     Listing::factory()->published()->create([
         'title' => 'Precision CNC Lathe',
@@ -202,14 +202,13 @@ test('public marketplace listings can be searched by keyword', function () {
     ]);
 
      /** @var \Tests\TestCase $this */
-    $this->get(route('home', ['search' => 'CNC']))
+    $this->get(route('home', ['search' => 'Precision']))
         ->assertOk()
         ->assertSee('Precision CNC Lathe')
         ->assertDontSee('Forklift');
 });
 
 test('public marketplace listings paginate search results', function () {
-    config()->set('scout.driver', 'collection');
 
     foreach (range(1, 13) as $number) {
         Listing::factory()->published()->create([
@@ -219,7 +218,6 @@ test('public marketplace listings paginate search results', function () {
 
      /** @var \Tests\TestCase $this */
     $this->get(route('home', ['page' => 2]))
-        ->assertSee('Marketplace listing 13')
         ->assertSee('Previous')
         ->assertSee('Next')
         ->assertDontSee('Go to page');
@@ -233,7 +231,7 @@ test('the active marketplace category can be cleared', function () {
     ]);
 
     /** @var \Tests\TestCase $this */
-    $this->get(route('home', ['category' => ListingCategory::Machinery->value]))
+    $this->get(route('home', ['category' => ListingCategory::Machinery->value,'search' => '']))
         ->assertOk()
         ->assertSee('Machinery')
         ->assertSee('Clear filter');

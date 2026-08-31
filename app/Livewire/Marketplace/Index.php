@@ -89,14 +89,11 @@ class Index extends Component
         $category = $this->category !== null ? ListingCategory::tryFrom($this->category) : null;
         $country = $this->country !== null ? Country::tryFrom($this->country) : null;
 
-        $query = filled($this->search)
-            ? Listing::search($this->search)
-            : Listing::query();
 
-        return $query
+        return Listing::search($this->search)
             ->where('status', ListingStatus::Published->value)
-            ->where('published_at', '<=', now())
-            ->where('expires_at', '>', now())
+            ->where('published_at', '<=', now()->timestamp)
+            ->where('expires_at', '>', now()->timestamp)
             ->when($postedAfter !== null, function ($query) use ($postedAfter): void {
                 $query->where(
                     'published_at',
