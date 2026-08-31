@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Livewire\Marketplace;
 
 use Illuminate\Validation\Rule;
@@ -11,7 +10,6 @@ use App\Enums\ListingStatus;
 use App\Models\Listing;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -24,6 +22,7 @@ class Index extends Component
 {
     use WithPagination;
 
+    private const SEARCH_DECAY_SECONDS = 60;
     private const PER_PAGE = 12;
 
     #[Url]
@@ -43,18 +42,6 @@ class Index extends Component
 
     #[Url]
     public string $postedWithin = '';
-
-    public function updatedSearch(): void
-{
-    $key = 'marketplace-search:' . request()->ip();
-
-    if (! RateLimiter::attempt($key, 20, fn (): bool => true, 60)) {
-        $this->addError('search', __('Please slow down your search requests.'));
-        return;
-    }
-
-    $this->resetPage();
-}
 
     public function clearFilters(): void
     {
@@ -88,8 +75,15 @@ class Index extends Component
 
     public function render(): View
     {
+        $isTrottleLimitReached = false;
+        $key = 'marketplace-search:' . request()->ip();
+        if (! RateLimiter::attempt($key, 30, fn(): bool => true, self::SEARCH_DECAY_SECONDS)) {
+            $this->addError('search', __('Please slow down your search requests.'));
+            $isTrottleLimitReached = true;
+        }
+
         $postedAfter = $this->postedAfter();
-        $listings = $this->searchListings($postedAfter);
+        $listings =  $isTrottleLimitReached ? collect([]) : $this->searchListings($postedAfter);
 
         return view('livewire.marketplace.index', [
             'listings' => $listings,
@@ -100,6 +94,7 @@ class Index extends Component
 
     private function searchListings(?int $postedAfter): LengthAwarePaginator
     {
+
 
         $category = $this->category !== null ? ListingCategory::tryFrom($this->category) : null;
         $country = $this->country !== null ? Country::tryFrom($this->country) : null;
@@ -116,10 +111,10 @@ class Index extends Component
                     $postedAfter,
                 );
             })
-            ->when($category !== null, fn ($query) => $query->where('category', $category->value))
-            ->when($country !== null, fn ($query) => $query->where('country', $country->value))
-            ->when($this->minPrice !== null, fn ($query) => $query->where('price', '>=', $this->minPrice))
-            ->when($this->maxPrice !== null, fn ($query) => $query->where('price', '<=', $this->maxPrice))
+            ->when($category !== null, fn($query) => $query->where('category', $category->value))
+            ->when($country !== null, fn($query) => $query->where('country', $country->value))
+            ->when($this->minPrice !== null, fn($query) => $query->where('price', '>=', $this->minPrice))
+            ->when($this->maxPrice !== null, fn($query) => $query->where('price', '<=', $this->maxPrice))
             ->orderBy('created_at', 'desc')
             ->paginate(self::PER_PAGE);
     }
