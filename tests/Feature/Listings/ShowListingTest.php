@@ -50,5 +50,5 @@ test('a seller cannot view another company listing show page', function () {
 
     $this->actingAs($seller)
         ->get(route('listings.show', $foreignListing))
-        ->assertNotFound();
+        ->assertForbidden();
 });
