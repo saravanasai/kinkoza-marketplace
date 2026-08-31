@@ -7,6 +7,7 @@ use App\Models\Listing;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -26,6 +27,8 @@ class UpdateListingAction
         Gate::authorize('update', $listing);
 
         $listing = $this->persistListing($listing, $data);
+
+        Cache::forget("marketplace-listing:{$listing->slug}");
 
         foreach ($images as $image) {
             $listing->addMedia($image)->toMediaCollection('images');

@@ -2,7 +2,8 @@
 
 namespace App\Livewire\Marketplace;
 
-use App\Enums\ListingStatus;
+use Illuminate\Support\Facades\Cache;
+
 use App\Models\ContactReveal;
 use App\Models\Listing;
 use App\Models\User;
@@ -47,7 +48,20 @@ class Show extends Component
             $this->contactRevealed = false;
         }
 
-        $this->loadImages();
+        $this->images = Cache::flexible(
+            "marketplace-listing-images:{$this->listing->id}:{$this->listing->updated_at->timestamp}",
+            [60, 300],
+            function (): array {
+                return $this->listing->getMedia('images')
+                    ->map(fn(Media $image): array => [
+                        'id' => $image->id,
+                        'name' => $image->name ?: $image->file_name,
+                        'url' => $this->resolveMediaUrl($image),
+                    ])
+                    ->values()
+                    ->all();
+            }
+        );
     }
 
     public function revealContact(): void
@@ -92,19 +106,6 @@ class Show extends Component
             'images' => $this->images,
         ]);
     }
-
-    private function loadImages(): void
-    {
-        $this->images = $this->listing->getMedia('images')
-            ->map(fn(Media $image): array => [
-                'id' => $image->id,
-                'name' => $image->name ?: $image->file_name,
-                'url' => $this->resolveMediaUrl($image),
-            ])
-            ->values()
-            ->all();
-    }
-
     private function resolveMediaUrl(Media $media): string
     {
         return $media->getTemporaryUrl(now()->addMinutes(15));
