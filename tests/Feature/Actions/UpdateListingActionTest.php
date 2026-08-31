@@ -16,6 +16,8 @@ test('keeps the existing slug when a listing title is unchanged', function () {
         'title' => 'CNC Lathe',
         'slug' => 'cnc-lathe',
     ]);
+
+     /** @var \Tests\TestCase $this */
     $this->actingAs($user);
 
     $updatedListing = UpdateListingAction::run($user, $listing, [
@@ -37,6 +39,8 @@ test('adds a suffix when an updated title conflicts with another listing', funct
     $company = $user->company;
     Listing::factory()->for($company)->create(['slug' => 'cnc-lathe']);
     $listing = Listing::factory()->for($company)->create();
+
+    /** @var \Tests\TestCase $this */
     $this->actingAs($user);
 
     $updatedListing = UpdateListingAction::run($user, $listing, [

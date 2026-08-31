@@ -15,6 +15,8 @@ test('creates a unique slug and publication window for a published listing', fun
     $company = $user->company;
     Listing::factory()->for($company)->create(['slug' => 'cnc-lathe']);
     $publishedAt = now()->startOfMinute();
+
+    /** @var \Tests\TestCase $this */
     $this->travelTo($publishedAt);
     $this->actingAs($user);
 
@@ -29,6 +31,7 @@ test('creates a unique slug and publication window for a published listing', fun
         'city' => 'Berlin',
     ]);
 
+    /** @var \Tests\TestCase $this */
     $this->assertModelExists($listing);
 
     expect($listing->slug)->toBe('cnc-lathe-1')
@@ -38,6 +41,7 @@ test('creates a unique slug and publication window for a published listing', fun
 
 test('leaves a draft listing outside the publication window', function () {
     $user = User::factory()->create();
+    /** @var \Tests\TestCase $this */
     $this->actingAs($user);
 
     $listing = CreateListingAction::run($user, [
@@ -57,6 +61,7 @@ test('leaves a draft listing outside the publication window', function () {
 
 test('rejects more than four listing images before persisting a listing', function () {
     $user = User::factory()->create();
+    /** @var \Tests\TestCase $this */
     $this->actingAs($user);
 
     CreateListingAction::run($user, [
