@@ -38,6 +38,7 @@ class Listing extends Model implements HasMedia
     /** @use HasFactory<ListingFactory> */
     use HasFactory, InteractsWithMedia, Searchable, SoftDeletes;
 
+    public const CACHE_KEY_PREFIX = 'marketplace-listing';
     protected $with = ['company'];
     protected function casts(): array
     {
