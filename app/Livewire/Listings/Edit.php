@@ -122,8 +122,6 @@ class Edit extends Component
         /** @var User $user */
         $user = Auth::user();
 
-        Gate::authorize('delete', $this->listing);
-
         $deleteListingAction->handle($user, $this->listing);
 
         Flux::toast(variant: 'success', text: __('Listing deleted.'));

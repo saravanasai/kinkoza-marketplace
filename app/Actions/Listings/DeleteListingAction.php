@@ -13,7 +13,7 @@ class DeleteListingAction
 
     public function handle(User $user, Listing $listing): void
     {
-        Gate::forUser($user)->authorize('delete', $listing);
+        Gate::authorize('delete', $listing);
 
         $listing->delete();
     }

@@ -29,15 +29,12 @@ class Show extends Component
     {
         /** @var User $user */
         $user = Auth::user();
-        $user->loadMissing('company');
-
-        abort_unless($user->company_id === $listing->company_id, 404);
-
-        $this->listing = $listing->loadMissing('company');
-
-        $this->companyName = $user->company->name;
 
         Gate::authorize('view', $this->listing);
+
+        $this->listing = $listing;
+
+        $this->companyName = $listing->company->name;
 
         $this->contactRevealsCount = $this->listing->contactReveals()->count();
 
