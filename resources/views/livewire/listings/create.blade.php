@@ -140,11 +140,11 @@
         </div>
 
         <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
-            <flux:button as="a" :href="route('listings.index')" wire:navigate variant="ghost" class="justify-center">
+            <flux:button as="a" :href="route('listings.index')" wire:navigate variant="ghost" icon="arrow-left" class="justify-center">
                 {{ __('Cancel') }}
             </flux:button>
 
-            <flux:button variant="primary" type="submit" class="justify-center" wire:loading.attr="disabled" wire:target="save">
+            <flux:button variant="primary" type="submit" icon="check" class="justify-center" wire:loading.attr="disabled" wire:target="save">
                 {{ __('Create listing') }}
             </flux:button>
         </div>

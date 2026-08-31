@@ -29,15 +29,12 @@ class Show extends Component
     {
         /** @var User $user */
         $user = Auth::user();
-        $user->loadMissing('company');
 
-        abort_unless($user->company_id === $listing->company_id, 404);
-
-        $this->listing = $listing->loadMissing('company');
-
-        $this->companyName = $user->company->name;
+        $this->listing = $listing;
 
         Gate::authorize('view', $this->listing);
+
+        $this->companyName = $listing->company->name;
 
         $this->contactRevealsCount = $this->listing->contactReveals()->count();
 
@@ -52,7 +49,7 @@ class Show extends Component
     private function loadImages(): void
     {
         $this->images = $this->listing->getMedia('images')
-            ->map(fn (Media $image): array => [
+            ->map(fn(Media $image): array => [
                 'id' => $image->id,
                 'name' => $image->name ?: $image->file_name,
                 'url' => $this->resolveMediaUrl($image),
@@ -63,14 +60,6 @@ class Show extends Component
 
     private function resolveMediaUrl(Media $media): string
     {
-        $diskName = $media->disk ?? null;
-        $disks = config('filesystems.disks', []);
-        $driver = $diskName !== null && isset($disks[$diskName]) ? ($disks[$diskName]['driver'] ?? null) : null;
-
-        if ($driver === 's3') {
-            return $media->getTemporaryUrl(now()->addMinutes(15));
-        }
-
-        return $media->getUrl();
+        return $media->getTemporaryUrl(now()->addMinutes(15));
     }
 }

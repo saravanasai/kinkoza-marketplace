@@ -77,8 +77,7 @@
             @if ($listings->isEmpty())
                 <div
                     class="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center dark:border-zinc-700 dark:bg-zinc-950/40">
-                    <p class="text-lg font-semibold text-zinc-950 dark:text-white">{{ __('No listings yet.') }}</p>
-                    <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{{ __('Create your first listing.') }}</p>
+                    <p class="text-lg font-semibold text-zinc-950 dark:text-white">{{ __('No listings Found.') }}</p>
                 </div>
             @else
                 <div class="hidden overflow-hidden rounded-2xl border border-zinc-200 md:block dark:border-zinc-700">

@@ -64,16 +64,11 @@ class Edit extends Component
     {
         /** @var User $user */
         $user = Auth::user();
-        $user->loadMissing('company');
-
         $this->companyName = $user->company->name;
 
-        abort_unless($user->company_id === $listing->company_id, 404);
+        Gate::authorize('view', $listing);
 
         $this->listing = $listing;
-
-        Gate::authorize('update', $this->listing);
-
         $this->title = $this->listing->title;
         $this->description = $this->listing->description;
         $this->category = $this->listing->category->value;
@@ -127,8 +122,6 @@ class Edit extends Component
         /** @var User $user */
         $user = Auth::user();
 
-        Gate::authorize('delete', $this->listing);
-
         $deleteListingAction->handle($user, $this->listing);
 
         Flux::toast(variant: 'success', text: __('Listing deleted.'));
@@ -148,8 +141,6 @@ class Edit extends Component
         Gate::authorize('update', $this->listing);
 
         $media = $this->listing->getMedia('images')->firstWhere('id', $mediaId);
-
-        abort_if($media === null, 404);
 
         $media->delete();
 
@@ -183,14 +174,12 @@ class Edit extends Component
             'publishedAt' => ['nullable', 'date'],
             'expiresAt' => ['nullable', 'date'],
             'images' => ['nullable', 'array', 'max:4'],
-            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
     }
 
     private function loadExistingImages(): void
     {
-        $this->listing = $this->listing->fresh();
-
         $this->existingImages = $this->listing->getMedia('images')
             ->map(fn ($image): array => [
                 'id' => $image->id,
@@ -203,14 +192,6 @@ class Edit extends Component
 
     private function resolveMediaUrl(Media $media): string
     {
-        $diskName = $media->disk ?? null;
-        $disks = config('filesystems.disks', []);
-        $driver = $diskName !== null && isset($disks[$diskName]) ? ($disks[$diskName]['driver'] ?? null) : null;
-
-        if ($driver === 's3') {
-            return $media->getTemporaryUrl(now()->addMinutes(15));
-        }
-
-        return $media->getUrl();
+          return $media->getTemporaryUrl(now()->addMinutes(15));
     }
 }

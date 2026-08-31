@@ -38,6 +38,7 @@ class Listing extends Model implements HasMedia
     /** @use HasFactory<ListingFactory> */
     use HasFactory, InteractsWithMedia, Searchable, SoftDeletes;
 
+    protected $with = ['company'];
     protected function casts(): array
     {
         return [

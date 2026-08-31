@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Listing;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
@@ -24,6 +26,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Route::bind('marketplaceListing', function (string $slug): Listing {
+            return Listing::query()
+                ->currentlyOnline()
+                ->where('slug', $slug)
+                ->firstOrFail();
+        });
+
         $this->configureDefaults();
         Model::preventLazyLoading(!app()->isProduction());
     }

@@ -6,6 +6,7 @@ use App\Enums\ListingStatus;
 use App\Models\Listing;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -15,43 +16,76 @@ class UpdateListingAction
 {
     use AsAction;
 
+    private const MAX_SLUG_ATTEMPTS = 5;
+
     /**
      * @param  array<string, mixed>  $data
      */
-    public function handle(User $user, Listing $listing, array $data): Listing
+    public function handle(User $user, Listing $listing, array $data, array $images = []): Listing
     {
-        Gate::forUser($user)->authorize('update', $listing);
+        Gate::authorize('update', $listing);
 
-        return DB::transaction(function () use ($listing, $data): Listing {
-            $slug = Str::slug($data['title']) ?: 'listing';
+        $listing = $this->persistListing($listing, $data);
 
-            $uniqueSlug = $slug;
-            $suffix = 1;
+        foreach ($images as $image) {
+            $listing->addMedia($image)->toMediaCollection('images');
+        }
 
-            while (Listing::query()->where('slug', $uniqueSlug)->whereKeyNot($listing->getKey())->exists()) {
-                $uniqueSlug = $slug.'-'.$suffix;
-                $suffix++;
+        return $listing;
+    }
+
+    private function persistListing(Listing $listing, array $data): Listing
+    {
+        for ($attempt = 0; $attempt < self::MAX_SLUG_ATTEMPTS; $attempt++) {
+            try {
+                return DB::transaction(function () use ($listing, $data): Listing {
+                    $publishedAt = $this->resolvePublishedAt($data);
+                    $expiresAt = $this->resolveExpiresAt($data, $publishedAt);
+                    $slug = $this->resolveUniqueSlug($data['title'], $listing);
+
+                    $listing->update([
+                        'title' => $data['title'],
+                        'slug' => $slug,
+                        'description' => $data['description'],
+                        'category' => $data['category'],
+                        'status' => $data['status'],
+                        'price' => (int) $data['price'],
+                        'currency' => $data['currency'],
+                        'country' => $data['country'],
+                        'city' => $data['city'],
+                        'published_at' => $publishedAt,
+                        'expires_at' => $expiresAt,
+                    ]);
+
+                    return $listing->refresh();
+                });
+            } catch (QueryException $exception) {
+                if (! $this->isDuplicateSlugException($exception) || $attempt === self::MAX_SLUG_ATTEMPTS - 1) {
+                    throw $exception;
+                }
             }
+        }
 
-            $publishedAt = $this->resolvePublishedAt($data);
-            $expiresAt = $this->resolveExpiresAt($data, $publishedAt);
+        throw new \RuntimeException('Unable to generate a unique listing slug.');
+    }
 
-            $listing->update([
-                'title' => $data['title'],
-                'slug' => $uniqueSlug,
-                'description' => $data['description'],
-                'category' => $data['category'],
-                'status' => $data['status'],
-                'price' => (int) $data['price'],
-                'currency' => $data['currency'],
-                'country' => $data['country'],
-                'city' => $data['city'],
-                'published_at' => $publishedAt,
-                'expires_at' => $expiresAt,
-            ]);
+    private function resolveUniqueSlug(string $title, Listing $exceptListing): string
+    {
+        $baseSlug = Str::slug($title) ?: 'listing';
+        $uniqueSlug = $baseSlug;
+        $suffix = 1;
 
-            return $listing->refresh();
-        });
+        while (Listing::query()->where('slug', $uniqueSlug)->whereKeyNot($exceptListing->getKey())->exists()) {
+            $uniqueSlug = $baseSlug.'-'.$suffix;
+            $suffix++;
+        }
+
+        return $uniqueSlug;
+    }
+
+    private function isDuplicateSlugException(QueryException $exception): bool
+    {
+        return Str::contains($exception->getMessage(), ['UNIQUE constraint failed', 'Duplicate entry', 'listings.slug']);
     }
 
     private function resolvePublishedAt(array $data): ?Carbon

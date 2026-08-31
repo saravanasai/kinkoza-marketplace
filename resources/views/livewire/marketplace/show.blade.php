@@ -1,13 +1,65 @@
+@php
+    $pageTitle = $listing->title.' - '.config('app.name', 'Kinkoza Marketplace');
+    $pageDescription = str($listing->description)->stripTags()->squish()->limit(160);
+    $canonicalUrl = route('marketplace.listings.show', $listing);
+    $ogImage = $images[0]['url'] ?? asset('android-chrome-512x512.png');
+@endphp
+
+@push('head')
+    <meta name="description" content="{{ $pageDescription }}">
+    <link rel="canonical" href="{{ $canonicalUrl }}">
+
+    <meta property="og:type" content="product">
+    <meta property="og:site_name" content="{{ config('app.name', 'Kinkoza Marketplace') }}">
+    <meta property="og:title" content="{{ $pageTitle }}">
+    <meta property="og:description" content="{{ $pageDescription }}">
+    <meta property="og:url" content="{{ $canonicalUrl }}">
+    <meta property="og:image" content="{{ $ogImage }}">
+    <meta property="og:image:alt" content="{{ $listing->title }}">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $pageTitle }}">
+    <meta name="twitter:description" content="{{ $pageDescription }}">
+    <meta name="twitter:image" content="{{ $ogImage }}">
+
+    <script type="application/ld+json">
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'Product',
+            'name' => $listing->title,
+            'description' => $pageDescription,
+            'url' => $canonicalUrl,
+            'image' => $ogImage,
+            'offers' => [
+                '@type' => 'Offer',
+                'priceCurrency' => $listing->currency->value,
+                'price' => $listing->price,
+                'availability' => 'https://schema.org/InStock',
+            ],
+            'brand' => [
+                '@type' => 'Organization',
+                'name' => $listing->company?->name ?? __('Verified seller'),
+            ],
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+    </script>
+@endpush
+
 <main class="marketplace-theme bg-slate-50 text-slate-900">
     <section class="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
         <div class="mb-6 flex items-center justify-between gap-3">
-            <a href="{{ route('home') }}" class="inline-flex items-center gap-2 text-sm font-medium text-blue-700 transition hover:text-blue-600" wire:navigate>
-                <span aria-hidden="true">←</span>
-                {{ __('Back to listings') }}
-            </a>
-            <span class="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
-                {{ __('Live listing') }}
-            </span>
+            <flux:button as="a" :href="route('home')" wire:navigate variant="ghost" icon="arrow-left" class="justify-center">
+                {{ __('Back to marketplace') }}
+            </flux:button>
+            <div class="flex flex-wrap items-center gap-2">
+                @if ($isOwnListing)
+                    <span class="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700">
+                        {{ __('Own listing') }}
+                    </span>
+                @endif
+                <span class="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
+                    {{ __('Live listing') }}
+                </span>
+            </div>
         </div>
 
         <article class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
@@ -54,13 +106,19 @@
                     </p>
 
                     <div class="mt-6 rounded-xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">
-                        {{ __('This listing is currently live on the marketplace.') }}
+                        @if ($isOwnListing)
+                            {{ __('This is your own marketplace listing, so contact details are shown automatically.') }}
+                        @else
+                            {{ __('Explore more details on this marketplace listing.') }}
+                        @endif
                     </div>
 
                     @auth
                         @if ($contactRevealed)
                             <div class="mt-5 space-y-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">{{ __('Seller contact') }}</p>
+                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                                    {{ $isOwnListing ? __('Your company contact') : __('Seller contact') }}
+                                </p>
                                 <dl class="space-y-3">
                                     @if ($listing->company?->contact_email)
                                         <div>
@@ -76,16 +134,22 @@
                                     @endif
                                 </dl>
                                 @if (! $listing->company?->contact_email && ! $listing->company?->contact_phone)
-                                    <p>{{ __('The seller has not provided contact details.') }}</p>
+                                    <p>
+                                        {{ $isOwnListing ? __('Your company has not provided contact details.') : __('The seller has not provided contact details.') }}
+                                    </p>
                                 @endif
                             </div>
-                        @else
+                        @elseif (! $isOwnListing)
                             <button type="button" wire:click="revealContact" class="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">
-                                {{ __('Reveal seller contact') }}
+                                {{ __('Contact seller') }}
                             </button>
                             @error('contact')
                                 <p class="mt-3 text-sm text-red-700">{{ $message }}</p>
                             @enderror
+                        @else
+                            <div class="mt-5 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+                                {{ __('Your company contact details are shown above.') }}
+                            </div>
                         @endif
                     @else
                         <a href="{{ route('login') }}" class="mt-5 inline-flex w-full items-center justify-center rounded-xl border border-blue-200 bg-white px-4 py-3 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-50" wire:navigate>

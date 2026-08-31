@@ -2,6 +2,9 @@
 
 namespace App\Livewire\Marketplace;
 
+use Illuminate\Support\Arr;
+use Illuminate\Validation\Rule;
+
 use App\Enums\Country;
 use App\Enums\ListingCategory;
 use App\Enums\ListingStatus;
@@ -23,19 +26,19 @@ class Index extends Component
     private const PER_PAGE = 12;
 
     #[Url]
-    public string $category = '';
+    public ?string $category = null;
 
     #[Url]
-    public string $search = '';
+    public ?string $search = null;
 
     #[Url]
-    public string $country = '';
+    public ?string $country = null;
 
     #[Url]
-    public string $minPrice = '';
+    public ?int $minPrice = null;
 
     #[Url]
-    public string $maxPrice = '';
+    public ?int $maxPrice = null;
 
     #[Url]
     public string $postedWithin = '';
@@ -48,19 +51,27 @@ class Index extends Component
 
     public function updating(string $property): void
     {
-        if (in_array($property, ['search', 'category', 'country', 'minPrice', 'maxPrice', 'postedWithin'], true)) {
+        if (in_array($property, ['category', 'country', 'minPrice', 'maxPrice'], true)) {
             $this->resetPage();
         }
+    }
+
+    public function updated(string $property): void
+    {
+        if (in_array($property, ['category', 'country', 'minPrice', 'maxPrice'], true)) {
+            $this->validateOnly($property);
+        }
+    }
+
+    public function isFilterApplied(): bool
+    {
+        return $this->search !== null && $this->search !== '' || $this->category !== null || $this->country !== null || $this->minPrice !== null || $this->maxPrice !== null || $this->postedWithin !== '';
     }
 
     public function render(): View
     {
         $postedAfter = $this->postedAfter();
         $listings = $this->searchListings($postedAfter);
-
-        if ($listings instanceof LengthAwarePaginator) {
-            $listings->getCollection()->load('company');
-        }
 
         return view('livewire.marketplace.index', [
             'listings' => $listings,
@@ -71,32 +82,26 @@ class Index extends Component
 
     private function searchListings(?int $postedAfter): LengthAwarePaginator
     {
+
+        $category = $this->category !== null ? ListingCategory::tryFrom($this->category) : null;
+        $country = $this->country !== null ? Country::tryFrom($this->country) : null;
+
         return Listing::search($this->search)
             ->where('status', ListingStatus::Published->value)
-            ->when(config('scout.driver') === 'typesense', function ($query): void {
-                $query
-                    ->where('published_at', '<=', now()->timestamp)
-                    ->where('expires_at', '>', now()->timestamp);
-            })
+            ->where('published_at', '<=', now()->timestamp)
+            ->where('expires_at', '>', now()->timestamp)
             ->when($postedAfter !== null, function ($query) use ($postedAfter): void {
                 $query->where(
                     'published_at',
                     '>=',
-                    config('scout.driver') === 'typesense' ? $postedAfter : now()->setTimestamp($postedAfter),
+                    $postedAfter,
                 );
             })
-            ->when($this->category !== '', function ($query): void {
-                $query->where('category', $this->category);
-            })
-            ->when($this->country !== '', function ($query): void {
-                $query->where('country', $this->country);
-            })
-            ->when(is_numeric($this->minPrice), function ($query): void {
-                $query->where('price', '>=', $this->minPrice);
-            })
-            ->when(is_numeric($this->maxPrice), function ($query): void {
-                $query->where('price', '<=', $this->maxPrice);
-            })
+            ->when($category !== null, fn($query) => $query->where('category', $category->value))
+            ->when($country !== null, fn($query) => $query->where('country', $country->value))
+            ->when($this->minPrice !== null, fn($query) => $query->where('price', '>=', $this->minPrice))
+            ->when($this->maxPrice !== null, fn($query) => $query->where('price', '<=', $this->maxPrice))
+            ->orderBy('created_at', 'desc')
             ->paginate(self::PER_PAGE);
     }
 
@@ -111,4 +116,17 @@ class Index extends Component
 
         return $days === null ? null : now()->subDays($days)->timestamp;
     }
+
+    protected function rules(): array
+    {
+        return [
+            'category' => ['nullable', Rule::enum(ListingCategory::class)],
+            'country' => ['nullable', Rule::enum(Country::class)],
+            'minPrice' => ['nullable', 'numeric', 'min:0'],
+            'maxPrice' => ['nullable', 'numeric', 'min:0', 'gte:minPrice'],
+            'postedWithin' => ['nullable', Rule::in(['7', '15', '30'])],
+        ];
+    }
+
+
 }

@@ -5,9 +5,11 @@ namespace App\Livewire\Listings;
 use App\Enums\Country;
 use App\Enums\ListingCategory;
 use App\Enums\ListingStatus;
+use Illuminate\Validation\Rule;
 use App\Models\Listing;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -31,24 +33,11 @@ class Index extends Component
     #[Url]
     public string $country = '';
 
-    public function updatingSearch(): void
+    public function updating(string $name, mixed $value): void
     {
-        $this->resetPage();
-    }
-
-    public function updatingStatus(): void
-    {
-        $this->resetPage();
-    }
-
-    public function updatingCategory(): void
-    {
-        $this->resetPage();
-    }
-
-    public function updatingCountry(): void
-    {
-        $this->resetPage();
+        if (Arr::has(['search', 'status', 'category', 'country'], $name)) {
+            $this->resetPage();
+        }
     }
 
     public function clearFilter(): void
@@ -60,21 +49,20 @@ class Index extends Component
     {
         /** @var User $user */
         $user = Auth::user();
-        $user->loadMissing('company');
 
         $listings = Listing::query()
-            ->where('company_id', $user->company_id)
+            ->ownedByCompany($user->company)
             ->when($this->search !== '', function ($query): void {
-                $query->where('title', 'like', '%'.$this->search.'%');
+                $query->where('title', 'like', '%' . $this->search . '%');
             })
             ->when($this->status !== '', function ($query): void {
-                $query->where('status', $this->status);
+                $query->where('status', ListingStatus::tryFrom($this->status));
             })
             ->when($this->category !== '', function ($query): void {
-                $query->where('category', $this->category);
+                $query->where('category', ListingCategory::tryFrom($this->category));
             })
             ->when($this->country !== '', function ($query): void {
-                $query->where('country', $this->country);
+                $query->where('country', Country::tryFrom($this->country));
             })
             ->orderByDesc('id')
             ->paginate(10);
@@ -86,5 +74,15 @@ class Index extends Component
             'categoryOptions' => ListingCategory::cases(),
             'countryOptions' => Country::cases(),
         ]);
+    }
+
+    protected function rules(): array
+    {
+        return [
+            'search' => ['nullable', 'string', 'max:255'],
+            'status' => ['nullable', Rule::enum(ListingStatus::class)],
+            'category' => ['nullable', Rule::enum(ListingCategory::class)],
+            'country' => ['nullable', Rule::enum(Country::class)],
+        ];
     }
 }
