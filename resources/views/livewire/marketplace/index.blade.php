@@ -81,17 +81,12 @@
                         <div class="mt-8 grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
                             @foreach ($listings as $listing)
                                 @php
-                                    $featuredImage = $listing->getFirstMedia('images');
-                                    $featuredImageUrl = null;
-
-                                    if ($featuredImage) {
-                                        $featuredImageUrl = $featuredImage->getTemporaryUrl(now()->addMinutes(15));
-                                    }
+                                    $featuredImage = $listing->getMedia('images')->first();
                                 @endphp
                                 <article wire:key="listing-{{ $listing->id }}"
                                     class="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm transition hover:border-blue-200 hover:shadow-md">
                                     @if ($featuredImage)
-                                        <img src="{{ $featuredImageUrl }}" alt="{{ $listing->title }}"
+                                        <img src="{{ $featuredImage->getTemporaryUrl(now()->addMinutes(15)) }}" alt="{{ $listing->title }}"
                                             class="h-52 w-full object-cover object-center">
                                     @else
                                         <div
@@ -254,6 +249,18 @@
                                 <option value="7">{{ __('Last 7 days') }}</option>
                                 <option value="15">{{ __('Last 15 days') }}</option>
                                 <option value="30">{{ __('Last 30 days') }}</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="sort"
+                                class="mb-2 block text-sm font-medium text-slate-700">{{ __('Sort by') }}</label>
+                            <select id="sort" wire:model.live="sort"
+                                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                                <option value="relevance">{{ __('Relevance') }}</option>
+                                <option value="newest">{{ __('Newest first') }}</option>
+                                <option value="price_asc">{{ __('Price: low to high') }}</option>
+                                <option value="price_desc">{{ __('Price: high to low') }}</option>
                             </select>
                         </div>
 

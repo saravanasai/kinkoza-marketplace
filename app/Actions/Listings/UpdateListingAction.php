@@ -29,7 +29,7 @@ class UpdateListingAction
 
         $listing = $this->persistListing($listing, $data);
 
-        Cache::forget("marketplace-listing:{$listing->slug}");
+        Cache::forget(Listing::CACHE_KEY_PREFIX.":{$listing->id}");
 
         foreach ($images as $image) {
             $listing->addMedia($image)->toMediaCollection('images');

@@ -49,7 +49,7 @@ class Show extends Component
         }
 
         $this->images = Cache::flexible(
-            "marketplace-listing-images:{$this->listing->id}:{$this->listing->updated_at->timestamp}",
+            Listing::CACHE_KEY_PREFIX.":{$this->listing->id}",
             [60, 300],
             function (): array {
                 return $this->listing->getMedia('images')

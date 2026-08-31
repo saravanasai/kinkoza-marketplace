@@ -235,3 +235,33 @@ test('the active marketplace category can be cleared', function () {
         ->assertSee('Machinery')
         ->assertSee('Clear filter');
 });
+
+test('public marketplace listings can be sorted by newest first', function () {
+    $olderTimestamp = now()->subDays(3);
+    $newerTimestamp = now();
+
+    Listing::factory()->published()->create([
+        'title' => 'Older listing',
+        'created_at' => $olderTimestamp,
+        'published_at' => $olderTimestamp,
+    ]);
+
+    Listing::factory()->published()->create([
+        'title' => 'Older listing 1',
+        'created_at' => $olderTimestamp,
+        'published_at' => $olderTimestamp,
+    ]);
+
+    Listing::factory()->published()->create([
+        'title' => 'Newer listing',
+        'created_at' => $newerTimestamp,
+        'published_at' => $newerTimestamp,
+    ]);
+
+    /** @var \Tests\TestCase $this */
+    $this->get(route('home', ['search' => 'listing', 'sort' => 'newest']))
+        ->assertOk()
+        ->assertSeeText('Newer listing')
+        ->assertSeeText('Older listing 1')
+        ->assertSeeText('Older listing');
+});
