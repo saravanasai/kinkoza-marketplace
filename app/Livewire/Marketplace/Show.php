@@ -39,7 +39,7 @@ class Show extends Component
 
         $user = Auth::user();
 
-        if($user != null && $user->company_id === $this->listing->company_id) {
+        if ($user != null && $user->company_id === $this->listing->company_id) {
             $this->isOwnListing = true;
             $this->contactRevealed = true;
         } else {
@@ -52,18 +52,19 @@ class Show extends Component
 
     public function revealContact(): void
     {
+        $user = Auth::user();
+
+        abort_unless($user instanceof User, 403, __('You must be logged in to reveal contact information.'));
+
         if ($this->isOwnListing) {
             $this->contactRevealed = true;
-
             return;
         }
 
-        $user = Auth::user();
-
         $contactReveal = RateLimiter::attempt(
-            'contact-reveal:'.$user->id,
+            'contact-reveal:' . $user->id,
             self::CONTACT_REVEAL_MAX_ATTEMPTS,
-            fn (): ContactReveal => ContactReveal::create([
+            fn(): ContactReveal => ContactReveal::create([
                 'listing_id' => $this->listing->id,
                 'user_id' => $user->id,
                 'ip_address' => request()->ip() ?? '0.0.0.0',
@@ -75,7 +76,7 @@ class Show extends Component
 
         if ($contactReveal === false) {
             $this->addError('contact', __('Too many contact reveals. Try again in :seconds seconds.', [
-                'seconds' => RateLimiter::availableIn('contact-reveal:'.$user->id),
+                'seconds' => RateLimiter::availableIn('contact-reveal:' . $user->id),
             ]));
 
             return;
@@ -95,7 +96,7 @@ class Show extends Component
     private function loadImages(): void
     {
         $this->images = $this->listing->getMedia('images')
-            ->map(fn (Media $image): array => [
+            ->map(fn(Media $image): array => [
                 'id' => $image->id,
                 'name' => $image->name ?: $image->file_name,
                 'url' => $this->resolveMediaUrl($image),
