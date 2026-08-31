@@ -11,7 +11,6 @@ use App\Enums\ListingStatus;
 use App\Models\Listing;
 use Illuminate\Contracts\View\View;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -48,7 +47,7 @@ class Index extends Component
 {
     $key = 'marketplace-search:' . request()->ip();
 
-    if (! RateLimiter::attempt($key, 20, fn (): bool => true, 60)) {
+    if (! RateLimiter::attempt($key, 4, fn (): bool => true, 60)) {
         $this->addError('search', __('Please slow down your search requests.'));
         return;
     }

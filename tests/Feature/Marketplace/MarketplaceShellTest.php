@@ -65,7 +65,7 @@ test('the public marketplace shows currently published listings', function () {
     ]);
 
      /** @var \Tests\TestCase $this */
-    $this->get(route('home',['search' => 'CNC']))
+    $this->get(route('home'))
         ->assertOk()
         ->assertSeeText('CNC Milling Machine')
         ->assertSeeText('Paris')
@@ -151,7 +151,7 @@ test('public marketplace listings can be filtered by category', function () {
     ]);
 
      /** @var \Tests\TestCase $this */
-    $this->get(route('home', ['category' => ListingCategory::Machinery->value,'search' => 'Machinery']))
+    $this->get(route('home', ['category' => ListingCategory::Machinery->value]))
         ->assertOk()
         ->assertSee('Machinery listing')
         ->assertDontSee('Vehicle listing');
@@ -181,7 +181,6 @@ test('public marketplace listings can be filtered by country and price range', f
         'country' => Country::BE->value,
         'minPrice' => 40000,
         'maxPrice' => 50000,
-        'search' => 'B',
     ]))
         ->assertOk()
         ->assertSee('Belgian Excavator')
@@ -202,7 +201,7 @@ test('public marketplace listings can be searched by keyword', function () {
     ]);
 
      /** @var \Tests\TestCase $this */
-    $this->get(route('home', ['search' => 'Precision']))
+    $this->get(route('home',['search' => 'CNC']))
         ->assertOk()
         ->assertSee('Precision CNC Lathe')
         ->assertDontSee('Forklift');
@@ -231,7 +230,7 @@ test('the active marketplace category can be cleared', function () {
     ]);
 
     /** @var \Tests\TestCase $this */
-    $this->get(route('home', ['category' => ListingCategory::Machinery->value,'search' => '']))
+    $this->get(route('home', ['category' => ListingCategory::Machinery->value]))
         ->assertOk()
         ->assertSee('Machinery')
         ->assertSee('Clear filter');
