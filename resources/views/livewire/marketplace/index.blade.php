@@ -81,17 +81,12 @@
                         <div class="mt-8 grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
                             @foreach ($listings as $listing)
                                 @php
-                                    $featuredImage = $listing->getFirstMedia('images');
-                                    $featuredImageUrl = null;
-
-                                    if ($featuredImage) {
-                                        $featuredImageUrl = $featuredImage->getTemporaryUrl(now()->addMinutes(15));
-                                    }
+                                    $featuredImage = $listing->getMedia('images')->first();
                                 @endphp
                                 <article wire:key="listing-{{ $listing->id }}"
                                     class="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm transition hover:border-blue-200 hover:shadow-md">
                                     @if ($featuredImage)
-                                        <img src="{{ $featuredImageUrl }}" alt="{{ $listing->title }}"
+                                        <img src="{{ $featuredImage->getTemporaryUrl(now()->addMinutes(15)) }}" alt="{{ $listing->title }}"
                                             class="h-52 w-full object-cover object-center">
                                     @else
                                         <div

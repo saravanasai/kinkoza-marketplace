@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Livewire\Marketplace;
 
 use Illuminate\Validation\Rule;
@@ -100,7 +101,7 @@ class Index extends Component
         $country = $this->country !== null ? Country::tryFrom($this->country) : null;
         $searchTerm = filled($this->search) ? $this->search : '*';
 
-        return Listing::search($searchTerm)
+        $listings = Listing::search($searchTerm)
             ->where('status', ListingStatus::Published->value)
             ->where('published_at', '<=', now()->timestamp)
             ->where('expires_at', '>', now()->timestamp)
@@ -117,6 +118,13 @@ class Index extends Component
             ->when($this->maxPrice !== null, fn($query) => $query->where('price', '<=', $this->maxPrice))
             ->orderBy('created_at', 'desc')
             ->paginate(self::PER_PAGE);
+
+        /** @var LengthAwarePaginator $listings */
+        $listings->setCollection(
+            $listings->getCollection()->load('media')
+        );
+
+        return $listings;
     }
 
     private function postedAfter(): ?int
