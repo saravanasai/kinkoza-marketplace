@@ -28,6 +28,8 @@ class UpdateListingAction
 
         $listing = $this->persistListing($listing, $data);
 
+        Cache::forget("marketplace-listing:{$listing->slug}");
+
         foreach ($images as $image) {
             $listing->addMedia($image)->toMediaCollection('images');
         }
