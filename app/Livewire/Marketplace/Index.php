@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Marketplace;
 
-use Illuminate\Support\Arr;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\RateLimiter;
 
 use App\Enums\Country;
 use App\Enums\ListingCategory;
@@ -42,6 +42,18 @@ class Index extends Component
 
     #[Url]
     public string $postedWithin = '';
+
+    public function updatedSearch(): void
+{
+    $key = 'marketplace-search:' . request()->ip();
+
+    if (! RateLimiter::attempt($key, 20, fn (): bool => true, 60)) {
+        $this->addError('search', __('Please slow down your search requests.'));
+        return;
+    }
+
+    $this->resetPage();
+}
 
     public function clearFilters(): void
     {
