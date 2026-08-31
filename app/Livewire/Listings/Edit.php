@@ -142,8 +142,6 @@ class Edit extends Component
 
         $media = $this->listing->getMedia('images')->firstWhere('id', $mediaId);
 
-        abort_if($media === null, 404);
-
         $media->delete();
 
         $this->loadExistingImages();
@@ -182,8 +180,6 @@ class Edit extends Component
 
     private function loadExistingImages(): void
     {
-        $this->listing = $this->listing->fresh();
-
         $this->existingImages = $this->listing->getMedia('images')
             ->map(fn ($image): array => [
                 'id' => $image->id,
@@ -196,14 +192,6 @@ class Edit extends Component
 
     private function resolveMediaUrl(Media $media): string
     {
-        $diskName = $media->disk ?? null;
-        $disks = config('filesystems.disks', []);
-        $driver = $diskName !== null && isset($disks[$diskName]) ? ($disks[$diskName]['driver'] ?? null) : null;
-
-        if ($driver === 's3') {
-            return $media->getTemporaryUrl(now()->addMinutes(15));
-        }
-
-        return $media->getUrl();
+          return $media->getTemporaryUrl(now()->addMinutes(15));
     }
 }
