@@ -64,16 +64,11 @@ class Edit extends Component
     {
         /** @var User $user */
         $user = Auth::user();
-        $user->loadMissing('company');
-
         $this->companyName = $user->company->name;
 
-        abort_unless($user->company_id === $listing->company_id, 404);
+        Gate::authorize('view', $listing);
 
         $this->listing = $listing;
-
-        Gate::authorize('update', $this->listing);
-
         $this->title = $this->listing->title;
         $this->description = $this->listing->description;
         $this->category = $this->listing->category->value;
@@ -183,7 +178,7 @@ class Edit extends Component
             'publishedAt' => ['nullable', 'date'],
             'expiresAt' => ['nullable', 'date'],
             'images' => ['nullable', 'array', 'max:4'],
-            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
     }
 

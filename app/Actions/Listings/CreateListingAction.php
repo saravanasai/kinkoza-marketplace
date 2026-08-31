@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Actions\Listings;
+
 use Illuminate\Support\Facades\Gate;
 use App\Enums\ListingStatus;
 use App\Models\Listing;
@@ -28,14 +29,14 @@ class CreateListingAction
             ]);
         }
 
-        return DB::transaction(function () use ($user, $data, $images): Listing {
+        $listing = DB::transaction(function () use ($user, $data): Listing {
             $slug = Str::slug($data['title']) ?: 'listing';
 
             $uniqueSlug = $slug;
             $suffix = 1;
 
             while (Listing::query()->where('slug', $uniqueSlug)->exists()) {
-                $uniqueSlug = $slug.'-'.$suffix;
+                $uniqueSlug = $slug . '-' . $suffix;
                 $suffix++;
             }
 
@@ -57,12 +58,14 @@ class CreateListingAction
                 'expires_at' => $expiresAt,
             ]);
 
-            foreach ($images as $image) {
-                $listing->addMedia($image)->toMediaCollection('images');
-            }
-
             return $listing;
         });
+
+        foreach ($images as $image) {
+            $listing->addMedia($image)->toMediaCollection('images');
+        }
+
+        return $listing;
     }
 
     private function resolvePublishedAt(array $data): ?Carbon

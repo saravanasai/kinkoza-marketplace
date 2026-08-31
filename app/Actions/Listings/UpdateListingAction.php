@@ -18,11 +18,11 @@ class UpdateListingAction
     /**
      * @param  array<string, mixed>  $data
      */
-    public function handle(User $user, Listing $listing, array $data): Listing
+    public function handle(User $user, Listing $listing, array $data, array $images = []): Listing
     {
-        Gate::forUser($user)->authorize('update', $listing);
+        Gate::authorize('update', $listing);
 
-        return DB::transaction(function () use ($listing, $data): Listing {
+        $listing = DB::transaction(function () use ($listing, $data): Listing {
             $slug = Str::slug($data['title']) ?: 'listing';
 
             $uniqueSlug = $slug;
@@ -52,6 +52,12 @@ class UpdateListingAction
 
             return $listing->refresh();
         });
+
+         foreach ($images as $image) {
+            $listing->addMedia($image)->toMediaCollection('images');
+        }
+
+        return $listing;
     }
 
     private function resolvePublishedAt(array $data): ?Carbon
