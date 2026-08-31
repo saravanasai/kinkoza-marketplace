@@ -86,6 +86,7 @@ RUN apt-get update \
 COPY . /var/www/html
 COPY --from=frontend /app/public/build ./public/build
 COPY --from=composer /var/www/html/vendor ./vendor
+COPY docker/php.ini /usr/local/etc/php/conf.d/99-upload-limits.ini
 
 RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs database bootstrap/cache \
     && chown -R 1000:1000 /var/www/html \
