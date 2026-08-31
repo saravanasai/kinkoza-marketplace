@@ -78,10 +78,7 @@
                                     $featuredImageUrl = null;
 
                                     if ($featuredImage) {
-                                        $disk = config('filesystems.disks.'.$featuredImage->disk, []);
-                                        $featuredImageUrl = ($disk['driver'] ?? null) === 's3'
-                                            ? $featuredImage->getTemporaryUrl(now()->addMinutes(15))
-                                            : $featuredImage->getUrl();
+                                        $featuredImageUrl = $featuredImage->getTemporaryUrl(now()->addMinutes(15));
                                     }
                                 @endphp
                                 <article wire:key="listing-{{ $listing->id }}" class="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm transition hover:border-blue-200 hover:shadow-md">
@@ -168,7 +165,7 @@
                             <flux:icon name="funnel" class="h-4 w-4 text-slate-900" />
                             <span>{{ __('Filters') }}</span>
                         </h3>
-                        @if ($search !== '' || $category !== '' || $country !== '' || $minPrice !== '' || $maxPrice !== '' || $postedWithin !== '')
+                        @if ($search !== null || $category !== null || $country !== null || $minPrice !== null || $maxPrice !== null || $postedWithin !== '')
                             <flux:button type="button" variant="primary" size="sm" icon="x-mark" wire:click="clearFilters" class="rounded-full">
                                 {{ __('Clear filter') }}
                             </flux:button>
@@ -178,22 +175,44 @@
                     <div class="mt-4 space-y-4">
                         <div>
                             <label for="category" class="mb-2 block text-sm font-medium text-slate-700">{{ __('Category') }}</label>
-                            <select id="category" wire:model.live="category" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                            <select
+                                id="category"
+                                wire:model.live="category"
+                                @class([
+                                    'w-full rounded-xl border bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2',
+                                    'border-slate-300 focus:border-blue-500 focus:ring-blue-200' => !$errors->has('category'),
+                                    'border-red-400 focus:border-red-500 focus:ring-red-200' => $errors->has('category'),
+                                ])
+                            >
                                 <option value="">{{ __('All categories') }}</option>
                                 @foreach ($categoryOptions as $option)
                                     <option value="{{ $option->value }}">{{ $option->value }}</option>
                                 @endforeach
                             </select>
+                            @error('category')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
                             <label for="country" class="mb-2 block text-sm font-medium text-slate-700">{{ __('Country') }}</label>
-                            <select id="country" wire:model.live="country" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                            <select
+                                id="country"
+                                wire:model.live="country"
+                                @class([
+                                    'w-full rounded-xl border bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:outline-none focus:ring-2',
+                                    'border-slate-300 focus:border-blue-500 focus:ring-blue-200' => !$errors->has('country'),
+                                    'border-red-400 focus:border-red-500 focus:ring-red-200' => $errors->has('country'),
+                                ])
+                            >
                                 <option value="">{{ __('All countries') }}</option>
                                 @foreach ($countryOptions as $option)
                                     <option value="{{ $option->value }}">{{ $option->value }}</option>
                                 @endforeach
                             </select>
+                            @error('country')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
@@ -209,8 +228,45 @@
                         <fieldset>
                             <legend class="mb-2 block text-sm font-medium text-slate-700">{{ __('Price range') }}</legend>
                             <div class="grid grid-cols-2 gap-3">
-                                <input id="min-price" type="number" min="0" step="1" wire:model.live.debounce.500ms="minPrice" placeholder="{{ __('Min') }}" aria-label="{{ __('Minimum price') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
-                                <input id="max-price" type="number" min="0" step="1" wire:model.live.debounce.500ms="maxPrice" placeholder="{{ __('Max') }}" aria-label="{{ __('Maximum price') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                                <div>
+                                    <input
+                                        id="min-price"
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        wire:model.live.debounce.500ms="minPrice"
+                                        placeholder="{{ __('Min') }}"
+                                        aria-label="{{ __('Minimum price') }}"
+                                        @class([
+                                            'w-full rounded-xl border bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:outline-none focus:ring-2',
+                                            'border-slate-300 focus:border-blue-500 focus:ring-blue-200' => !$errors->has('minPrice'),
+                                            'border-red-400 focus:border-red-500 focus:ring-red-200' => $errors->has('minPrice'),
+                                        ])
+                                    >
+                                    @error('minPrice')
+                                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <input
+                                        id="max-price"
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        wire:model.live.debounce.500ms="maxPrice"
+                                        placeholder="{{ __('Max') }}"
+                                        aria-label="{{ __('Maximum price') }}"
+                                        @class([
+                                            'w-full rounded-xl border bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:outline-none focus:ring-2',
+                                            'border-slate-300 focus:border-blue-500 focus:ring-blue-200' => !$errors->has('maxPrice'),
+                                            'border-red-400 focus:border-red-500 focus:ring-red-200' => $errors->has('maxPrice'),
+                                        ])
+                                    >
+                                    @error('maxPrice')
+                                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
                             </div>
                         </fieldset>
 
