@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Actions\Listings;
-
 use Illuminate\Support\Facades\Gate;
 use App\Enums\ListingStatus;
 use App\Models\Listing;
