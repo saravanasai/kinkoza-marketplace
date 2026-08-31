@@ -5,12 +5,12 @@ namespace App\Actions\Listings;
 use App\Enums\ListingStatus;
 use App\Models\Listing;
 use App\Models\User;
-use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 use Lorisleiva\Actions\Concerns\AsAction;
 
 class UpdateListingAction
@@ -91,7 +91,7 @@ class UpdateListingAction
         return Str::contains($exception->getMessage(), ['UNIQUE constraint failed', 'Duplicate entry', 'listings.slug']);
     }
 
-    private function resolvePublishedAt(array $data): ?Carbon
+    private function resolvePublishedAt(array $data): ?CarbonInterface
     {
         if (! empty($data['publishedAt'])) {
             return Carbon::parse($data['publishedAt']);
@@ -104,7 +104,7 @@ class UpdateListingAction
         return null;
     }
 
-    private function resolveExpiresAt(array $data, ?Carbon $publishedAt): ?Carbon
+    private function resolveExpiresAt(array $data, ?CarbonInterface $publishedAt): ?CarbonInterface
     {
         if (! empty($data['expiresAt'])) {
             return Carbon::parse($data['expiresAt']);

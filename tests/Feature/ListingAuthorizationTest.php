@@ -6,15 +6,15 @@ use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 
 test('seller A can manage Listing A', function () {
-    $companyA = Company::factory()->create();
-    $sellerA = User::factory()->forCompany($companyA)->create();
-    $listingA = Listing::factory()->for($companyA)->create();
+
+    $sellerA = User::factory()->create();
+    $listingA = Listing::factory()->for($sellerA->company)->create();
 
     expect(Gate::forUser($sellerA)->allows('view', $listingA))->toBeTrue()
         ->and(Gate::forUser($sellerA)->allows('update', $listingA))->toBeTrue()
         ->and(Gate::forUser($sellerA)->allows('delete', $listingA))->toBeTrue()
         ->and(Gate::forUser($sellerA)->allows('publish', $listingA))->toBeTrue()
-        ->and(Gate::forUser($sellerA)->allows('create', [Listing::class, $companyA]))->toBeTrue();
+        ->and(Gate::forUser($sellerA)->allows('create', [Listing::class, $sellerA->company]))->toBeTrue();
 });
 
 test('seller A cannot update Listing B', function () {
