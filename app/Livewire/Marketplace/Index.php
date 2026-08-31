@@ -25,6 +25,10 @@ class Index extends Component
 
     private const SEARCH_DECAY_SECONDS = 60;
     private const PER_PAGE = 12;
+    private const SORT_RELEVANCE = 'relevance';
+    private const SORT_NEWEST = 'newest';
+    private const SORT_PRICE_ASC = 'price_asc';
+    private const SORT_PRICE_DESC = 'price_desc';
 
     #[Url]
     public ?string $category = null;
@@ -44,22 +48,26 @@ class Index extends Component
     #[Url]
     public string $postedWithin = '';
 
+        #[Url]
+        public string $sort = self::SORT_RELEVANCE;
+
     public function clearFilters(): void
     {
         $this->reset('search', 'category', 'country', 'minPrice', 'maxPrice', 'postedWithin');
+            $this->reset('sort');
         $this->resetPage();
     }
 
     public function updating(string $property): void
     {
-        if (in_array($property, ['category', 'country', 'minPrice', 'maxPrice'], true)) {
+        if (in_array($property, ['category', 'country', 'minPrice', 'maxPrice', 'sort'], true)) {
             $this->resetPage();
         }
     }
 
     public function updated(string $property): void
     {
-        if (in_array($property, ['category', 'country', 'minPrice', 'maxPrice'], true)) {
+        if (in_array($property, ['category', 'country', 'minPrice', 'maxPrice', 'sort'], true)) {
             $this->validateOnly($property);
         }
     }
@@ -71,7 +79,8 @@ class Index extends Component
             || $this->country !== null
             || $this->minPrice !== null
             || $this->maxPrice !== null
-            || $this->postedWithin !== '';
+            || $this->postedWithin !== ''
+            || $this->sort !== self::SORT_RELEVANCE;
     }
 
     public function render(): View
@@ -95,12 +104,11 @@ class Index extends Component
 
     private function searchListings(?int $postedAfter): LengthAwarePaginator
     {
-
-
         $category = $this->category !== null ? ListingCategory::tryFrom($this->category) : null;
         $country = $this->country !== null ? Country::tryFrom($this->country) : null;
         $searchTerm = filled($this->search) ? $this->search : '*';
 
+        /** @var LengthAwarePaginator $listings */
         $listings = Listing::search($searchTerm)
             ->where('status', ListingStatus::Published->value)
             ->where('published_at', '<=', now()->timestamp)
@@ -116,13 +124,14 @@ class Index extends Component
             ->when($country !== null, fn($query) => $query->where('country', $country->value))
             ->when($this->minPrice !== null, fn($query) => $query->where('price', '>=', $this->minPrice))
             ->when($this->maxPrice !== null, fn($query) => $query->where('price', '<=', $this->maxPrice))
-            ->orderBy('created_at', 'desc')
+            ->when($this->sort === self::SORT_NEWEST, fn ($query) => $query->orderBy('created_at', 'desc'))
+            ->when($this->sort === self::SORT_PRICE_ASC, fn ($query) => $query->orderBy('price', 'asc'))
+            ->when($this->sort === self::SORT_PRICE_DESC, fn ($query) => $query->orderBy('price', 'desc'))
             ->paginate(self::PER_PAGE);
 
-        /** @var LengthAwarePaginator $listings */
-        $listings->setCollection(
-            $listings->getCollection()->load('media')
-        );
+        $collection = $listings->getCollection();
+        $collection->load('media');
+        $listings->setCollection($collection);
 
         return $listings;
     }
@@ -147,6 +156,12 @@ class Index extends Component
             'minPrice' => ['nullable', 'numeric', 'min:0'],
             'maxPrice' => ['nullable', 'numeric', 'min:0', 'gte:minPrice'],
             'postedWithin' => ['nullable', Rule::in(['7', '15', '30'])],
+            'sort' => ['nullable', Rule::in([
+                self::SORT_RELEVANCE,
+                self::SORT_NEWEST,
+                self::SORT_PRICE_ASC,
+                self::SORT_PRICE_DESC,
+            ])],
         ];
     }
 }

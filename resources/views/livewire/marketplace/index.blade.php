@@ -252,6 +252,18 @@
                             </select>
                         </div>
 
+                        <div>
+                            <label for="sort"
+                                class="mb-2 block text-sm font-medium text-slate-700">{{ __('Sort by') }}</label>
+                            <select id="sort" wire:model.live="sort"
+                                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                                <option value="relevance">{{ __('Relevance') }}</option>
+                                <option value="newest">{{ __('Newest first') }}</option>
+                                <option value="price_asc">{{ __('Price: low to high') }}</option>
+                                <option value="price_desc">{{ __('Price: high to low') }}</option>
+                            </select>
+                        </div>
+
                         <fieldset>
                             <legend class="mb-2 block text-sm font-medium text-slate-700">{{ __('Price range') }}
                             </legend>
