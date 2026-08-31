@@ -97,8 +97,9 @@ class Index extends Component
 
         $category = $this->category !== null ? ListingCategory::tryFrom($this->category) : null;
         $country = $this->country !== null ? Country::tryFrom($this->country) : null;
+        $searchTerm = filled($this->search) ? $this->search : '*';
 
-        return Listing::search($this->search)
+        return Listing::search($searchTerm)
             ->where('status', ListingStatus::Published->value)
             ->where('published_at', '<=', now()->timestamp)
             ->where('expires_at', '>', now()->timestamp)
