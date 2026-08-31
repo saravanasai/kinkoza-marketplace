@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Actions\Listings;
-
+use Illuminate\Support\Facades\Gate;
 use App\Enums\ListingStatus;
 use App\Models\Listing;
 use App\Models\User;
@@ -20,6 +20,8 @@ class CreateListingAction
      */
     public function handle(User $user, array $data, array $images = []): Listing
     {
+        Gate::authorize('create', [Listing::class, $user->company]);
+
         if (count($images) > 4) {
             throw ValidationException::withMessages([
                 'images' => __('You may upload up to 4 images.'),

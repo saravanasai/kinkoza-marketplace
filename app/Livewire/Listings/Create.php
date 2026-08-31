@@ -7,13 +7,11 @@ use App\Enums\Country;
 use App\Enums\Currency;
 use App\Enums\ListingCategory;
 use App\Enums\ListingStatus;
-use App\Models\Listing;
 use App\Models\User;
 use Carbon\Carbon;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Title;
@@ -64,8 +62,6 @@ class Create extends Component
     {
         /** @var User $user */
         $user = Auth::user();
-
-        Gate::authorize('create', [Listing::class, $user->company]);
 
         if (count($this->images) > 4) {
             Flux::toast(variant: 'error', text: __('You may upload up to 4 images.'));
@@ -143,7 +139,7 @@ class Create extends Component
                 },
             ],
             'images' => ['nullable', 'array', 'max:4'],
-            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
     }
 
