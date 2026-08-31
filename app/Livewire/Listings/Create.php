@@ -57,8 +57,6 @@ class Create extends Component
     {
         /** @var User $user */
         $user = Auth::user();
-        $user->loadMissing('company');
-
         $this->companyName = $user->company->name;
     }
 
@@ -66,7 +64,6 @@ class Create extends Component
     {
         /** @var User $user */
         $user = Auth::user();
-        $user->loadMissing('company');
 
         Gate::authorize('create', [Listing::class, $user->company]);
 
