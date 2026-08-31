@@ -63,14 +63,6 @@ class Create extends Component
         /** @var User $user */
         $user = Auth::user();
 
-        if (count($this->images) > 4) {
-            Flux::toast(variant: 'error', text: __('You may upload up to 4 images.'));
-
-            $this->addError('images', __('You may upload up to 4 images.'));
-
-            return;
-        }
-
         try {
             $validated = $this->validate($this->rules());
         } catch (ValidationException $exception) {
