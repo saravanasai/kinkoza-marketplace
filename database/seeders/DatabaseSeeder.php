@@ -11,6 +11,7 @@ use App\Models\Company;
 use App\Models\Listing;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -187,7 +188,27 @@ class DatabaseSeeder extends Seeder
             Listing::query()->create($listing);
         }
 
-        Listing::factory(400)->for($companyA)->create();
-        Listing::factory(500)->for($companyB)->create();
+        $companyAListings = Listing::factory()
+    ->count(400)
+    ->for($companyA)
+    ->published()
+    ->create();
+
+$companyAListings->each(function (Listing $listing): void {
+    $listing->addMedia(UploadedFile::fake()->image('listing.jpg'))
+        ->toMediaCollection('images');
+});
+
+$companyBListings = Listing::factory()
+    ->count(400)
+    ->for($companyB)
+    ->published()
+    ->create();
+
+$companyBListings->each(function (Listing $listing): void {
+    $listing->addMedia(UploadedFile::fake()->image('listing.jpg'))
+        ->toMediaCollection('images');
+});
+
     }
 }
