@@ -23,13 +23,17 @@ fi
 
 ROLE="${1:-serve}"
 
-# The queue worker only consumes jobs; migrations and search import run once,
-# on the "serve" role, so both roles can start concurrently without racing.
+# The worker only consumes jobs; setup remains on the application service.
 if [ "$ROLE" = "worker" ]; then
   exec php artisan queue:work --tries=3 --sleep=3 --max-time=3600
 fi
 
 php artisan migrate --force --no-interaction
+
+if [ ! -f database/.seeded ]; then
+  php artisan db:seed --force --no-interaction
+  touch database/.seeded
+fi
 
 if [ "${SCOUT_DRIVER:-}" = "typesense" ]; then
   php artisan scout:import "App\Models\Listing" --no-interaction || true

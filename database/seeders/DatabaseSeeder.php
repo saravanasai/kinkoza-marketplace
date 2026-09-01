@@ -189,7 +189,7 @@ class DatabaseSeeder extends Seeder
         }
 
         $companyAListings = Listing::factory()
-    ->count(400)
+    ->count(10)
     ->for($companyA)
     ->published()
     ->create();
@@ -200,7 +200,7 @@ $companyAListings->each(function (Listing $listing): void {
 });
 
 $companyBListings = Listing::factory()
-    ->count(400)
+    ->count(10)
     ->for($companyB)
     ->published()
     ->create();
