@@ -86,8 +86,8 @@
                                 <article wire:key="listing-{{ $listing->id }}"
                                     class="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm transition hover:border-blue-200 hover:shadow-md">
                                     @if ($featuredImage)
-                                        <img src="{{ $featuredImage->getTemporaryUrl(now()->addMinutes(15)) }}" alt="{{ $listing->title }}"
-                                            class="h-52 w-full object-cover object-center">
+                                        <img src="{{ $featuredImage->getTemporaryUrl(now()->addMinutes(15)) }}"
+                                            alt="{{ $listing->title }}" class="h-52 w-full object-cover object-center">
                                     @else
                                         <div
                                             class="flex h-52 items-center justify-center bg-linear-to-br from-blue-100 via-slate-100 to-slate-200 text-blue-700">
@@ -137,11 +137,13 @@
                                                         {{ __('Price') }}</p>
                                                     <p class="mt-1 text-lg font-semibold text-slate-900">
                                                         {{ $listing->currency->value }}
-                                                        {{ number_format($listing->price) }}
+                                                       {{ \Illuminate\Support\Number::format($listing->price) }}
                                                     </p>
                                                 </div>
                                                 <flux:button as="a"
-                                                    :href="route('marketplace.listings.show', $listing->slug)"
+                                                    :href="route('marketplace.listings.show', array_merge([
+                                                            'marketplaceListing' => $listing->slug,
+                                                        ],$this->queryStringForListing()))"
                                                     wire:navigate size="sm" variant="primary" icon="eye"
                                                     class="min-w-36 rounded-full px-4 py-2.5 font-semibold shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
                                                     {{ __('More details') }}

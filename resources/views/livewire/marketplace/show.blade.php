@@ -47,7 +47,7 @@
 <main class="marketplace-theme bg-slate-50 text-slate-900">
     <section class="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
         <div class="mb-6 flex items-center justify-between gap-3">
-            <flux:button as="a" :href="route('home')" wire:navigate variant="ghost" icon="arrow-left" class="justify-center">
+            <flux:button as="a" :href="route('home', request()->query())" wire:navigate variant="ghost" icon="arrow-left" class="justify-center">
                 {{ __('Back to marketplace') }}
             </flux:button>
             <div class="flex flex-wrap items-center gap-2">
