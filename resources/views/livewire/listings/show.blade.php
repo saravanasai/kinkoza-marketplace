@@ -77,7 +77,7 @@
 
             <div class="space-y-2">
                 <label for="price" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ __('Price') }}</label>
-                <input id="price" type="text" value="{{ number_format($listing->price) }}" disabled class="block w-full rounded-xl border border-zinc-300 bg-zinc-100 px-3 py-2 text-sm text-zinc-950 shadow-sm dark:border-zinc-700 dark:bg-zinc-950 dark:text-white">
+                <input id="price" type="text" value="{{ \Illuminate\Support\Number::format($listing->price) }}" disabled class="block w-full rounded-xl border border-zinc-300 bg-zinc-100 px-3 py-2 text-sm text-zinc-950 shadow-sm dark:border-zinc-700 dark:bg-zinc-950 dark:text-white">
             </div>
 
             <div class="space-y-2">
