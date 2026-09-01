@@ -48,13 +48,13 @@ class Index extends Component
     #[Url]
     public string $postedWithin = '';
 
-        #[Url]
-        public string $sort = self::SORT_RELEVANCE;
+    #[Url]
+    public string $sort = self::SORT_RELEVANCE;
 
     public function clearFilters(): void
     {
         $this->reset('search', 'category', 'country', 'minPrice', 'maxPrice', 'postedWithin');
-            $this->reset('sort');
+        $this->reset('sort');
         $this->resetPage();
     }
 
@@ -124,9 +124,9 @@ class Index extends Component
             ->when($country !== null, fn($query) => $query->where('country', $country->value))
             ->when($this->minPrice !== null, fn($query) => $query->where('price', '>=', $this->minPrice))
             ->when($this->maxPrice !== null, fn($query) => $query->where('price', '<=', $this->maxPrice))
-            ->when($this->sort === self::SORT_NEWEST, fn ($query) => $query->orderBy('created_at', 'desc'))
-            ->when($this->sort === self::SORT_PRICE_ASC, fn ($query) => $query->orderBy('price', 'asc'))
-            ->when($this->sort === self::SORT_PRICE_DESC, fn ($query) => $query->orderBy('price', 'desc'))
+            ->when($this->sort === self::SORT_NEWEST, fn($query) => $query->orderBy('created_at', 'desc'))
+            ->when($this->sort === self::SORT_PRICE_ASC, fn($query) => $query->orderBy('price', 'asc'))
+            ->when($this->sort === self::SORT_PRICE_DESC, fn($query) => $query->orderBy('price', 'desc'))
             ->paginate(self::PER_PAGE);
 
         $collection = $listings->getCollection();
@@ -146,6 +146,19 @@ class Index extends Component
         };
 
         return $days === null ? null : now()->subDays($days)->timestamp;
+    }
+
+    public function queryStringForListing(): array
+    {
+        return array_filter([
+            'search' => $this->search,
+            'category' => $this->category,
+            'country' => $this->country,
+            'minPrice' => $this->minPrice,
+            'maxPrice' => $this->maxPrice,
+            'postedWithin' => $this->postedWithin !== '' ? $this->postedWithin : null,
+            'sort' => $this->sort !== self::SORT_RELEVANCE ? $this->sort : null,
+        ], static fn($value) => $value !== null && $value !== '');
     }
 
     protected function rules(): array
